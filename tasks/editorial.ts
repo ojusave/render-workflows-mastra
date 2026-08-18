@@ -2,6 +2,7 @@ import { task } from "@renderinc/sdk/workflows";
 import { mastra } from "../mastra/index.js";
 import {
   REVIEW_FOCUSES,
+  parseReview,
   type EditorialResult,
   type Review,
 } from "../shared/editorial.js";
@@ -23,7 +24,7 @@ export const reviewDraft = task(
   async function reviewDraft(draft: string, focus: string): Promise<Review> {
     const reviewer = mastra.getAgentById("reviewer-agent");
     const response = await reviewer.generate(`
-Review this draft for ${focus}.
+Review this draft for ${focus}. JSON only.
 
 Draft:
 ${draft}
@@ -33,7 +34,7 @@ ${draft}
       throw new Error(`The ${focus} review returned no text`);
     }
 
-    return { focus, feedback: response.text };
+    return parseReview(focus, response.text);
   }
 );
 
@@ -50,14 +51,19 @@ export const reviseDraft = task(
     reviews: Review[]
   ): Promise<{ draft: string }> {
     const editor = mastra.getAgentById("editor-agent");
+    const compact = reviews.map((r) => ({
+      focus: r.focus,
+      verdict: r.verdict,
+      notes: r.notes,
+    }));
     const response = await editor.generate(`
-Revise the draft using the review feedback.
+Revise the draft using these reviewer notes.
 
 Draft:
 ${draft}
 
 Reviews:
-${JSON.stringify(reviews, null, 2)}
+${JSON.stringify(compact, null, 2)}
 `);
 
     if (!response.text) {

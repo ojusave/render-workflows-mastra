@@ -16,9 +16,11 @@ export const reviewerAgent = new Agent({
   name: "Reviewer Agent",
   model,
   instructions: `
-Review the supplied draft only from the requested perspective.
-Identify concrete problems and recommend specific changes.
-Do not rewrite the full draft.
+You review a draft from ONE requested perspective only.
+Do not rewrite the draft.
+Reply with JSON only, no markdown fences:
+{"verdict":"one sentence naming the main problem","notes":["specific edit","specific edit","specific edit"]}
+Keep each note under 12 words. At most 3 notes.
 `,
 });
 
@@ -27,7 +29,7 @@ export const editorAgent = new Agent({
   name: "Editor Agent",
   model,
   instructions: `
-Revise the supplied draft using the reviewers' feedback.
+Revise the supplied draft using the reviewers' verdicts and notes.
 Return the complete revised draft and nothing else.
 Preserve accurate details and do not introduce unsupported claims.
 `,
