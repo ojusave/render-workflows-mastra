@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mastra Editorial Pipeline</title>
+  <link rel="icon" href="https://render.com/icon.svg" type="image/svg+xml" />
+  <script>
+    (function(){var t=localStorage.getItem("theme");if(!t)t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.className=t})();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --render-purple: #6c63ff;
+      --render-purple-hover: #5a52d5;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+    }
+    html.light {
+      --bg: #fafafa; --surface: #ffffff; --border: rgba(0,0,0,0.08);
+      --text: #18181b; --text-muted: #52525b; --text-dim: #a1a1aa;
+      --text-strong: #09090b; --overlay-subtle: rgba(0,0,0,0.03);
+      --overlay-medium: rgba(0,0,0,0.05); --sep: #e4e4e7;
+    }
+    html.dark {
+      --bg: #0a0a0a; --surface: #141416; --border: rgba(255,255,255,0.08);
+      --text: #e4e4e7; --text-muted: #71717a; --text-dim: #52525b;
+      --text-strong: #fafafa; --overlay-subtle: rgba(255,255,255,0.04);
+      --overlay-medium: rgba(255,255,255,0.06); --sep: #27272a;
+    }
+    html, body {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3 { font-family: 'Roboto', -apple-system, sans-serif; font-weight: 300; }
+    a { color: var(--render-purple); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      padding: 0.625rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    header .title-group { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+    header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.4); flex-shrink: 0; }
+    header h1 { font-size: 0.875rem; font-weight: 600; font-family: 'Inter', sans-serif; color: var(--text-strong); letter-spacing: -0.01em; white-space: nowrap; }
+    header .tag { font-size: 0.6rem; padding: 0.125rem 0.4rem; background: var(--overlay-medium); color: var(--text-muted); font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; border: 1px solid var(--border); }
+    header .actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .header-btn {
+      font-size: 0.725rem; font-weight: 500; padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border); background: transparent; color: var(--text-muted);
+      cursor: pointer; transition: all 0.15s; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.3rem; font-family: 'Inter', sans-serif;
+    }
+    .header-btn:hover { background: var(--overlay-subtle); color: var(--text); text-decoration: none; }
+    .header-btn.primary { background: var(--render-purple); border-color: var(--render-purple); color: #fff; }
+    .header-btn.primary:hover { background: var(--render-purple-hover); }
+    .header-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .signup-short { display: none; }
+    main {
+      flex: 1 0 auto;
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+    .hero h2 { font-size: 1.35rem; color: var(--text-strong); margin-bottom: 0.4rem; }
+    .hero p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 0.4rem; }
+    textarea {
+      width: 100%; min-height: 160px; resize: vertical;
+      padding: 0.85rem 1rem; border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6;
+    }
+    textarea:focus { outline: 1px solid var(--render-purple); }
+    .row { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0 1.5rem; }
+    .run-btn {
+      background: var(--render-purple); color: #fff; border: none;
+      padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .run-btn:hover { background: var(--render-purple-hover); }
+    .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ghost {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.55rem 0.85rem; font-size: 0.8rem; cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .ghost:hover { color: var(--text); background: var(--overlay-subtle); }
+    .activity-feed { display: flex; flex-direction: column; margin-top: 0.5rem; }
+    .activity-item { display: flex; align-items: stretch; padding: 0.5rem 0; font-size: 0.8rem; color: var(--text-muted); }
+    .activity-track { display: flex; flex-direction: column; align-items: center; width: 12px; margin-right: 0.625rem; padding-top: 0.15rem; }
+    .indicator { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+    .activity-track::after { content: ""; flex: 1; width: 2px; margin-top: 2px; background: var(--border); }
+    .activity-item:last-child .activity-track::after { display: none; }
+    .activity-item.active .indicator { background: var(--render-purple); box-shadow: 0 0 8px rgba(108,99,255,0.5); animation: pulse 1.5s ease-in-out infinite; }
+    .activity-item.done .indicator { background: var(--green); }
+    .activity-item.error .indicator { background: var(--red); }
+    .activity-item .label { flex: 1; line-height: 1.5; padding-top: 0.1rem; }
+    .activity-item .label strong { color: var(--text); font-weight: 600; }
+    .error-box { display: none; margin-top: 0.75rem; padding: 0.75rem 1rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: var(--red); font-size: 0.8rem; }
+    .cards { display: grid; gap: 0.75rem; margin-top: 1.25rem; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); padding: 1rem 1.1rem;
+    }
+    .card h3 { font-size: 0.75rem; font-weight: 600; font-family: 'Inter', sans-serif; color: var(--text-strong); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.5rem; }
+    .card p { font-size: 0.8rem; line-height: 1.65; color: var(--text-muted); white-space: pre-wrap; }
+    .revised { white-space: pre-wrap; font-size: 0.9rem; line-height: 1.7; color: var(--text); }
+    footer {
+      flex-shrink: 0;
+      margin-top: auto;
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.375rem;
+      font-size: 0.675rem; color: var(--text-dim); background: var(--bg); text-align: center;
+    }
+    footer a { color: var(--text-muted); }
+    footer a:hover { color: var(--text); }
+    footer .sep { color: var(--sep); }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @media (max-width: 640px) {
+      .signup-full { display: none; }
+      .signup-short { display: inline; }
+      header h1 { font-size: 0.8rem; }
+      header .tag { display: none; }
+      .deploy-btn img { height: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-group">
+      <div class="dot"></div>
+      <h1>Mastra Editorial Pipeline</h1>
+      <span class="tag">Mastra + Render</span>
+    </div>
+    <div class="actions">
+      <a class="deploy-btn" href="https://render.com/deploy?repo=https://github.com/ojusave/render-workflows-mastra" target="_blank" rel="noopener noreferrer">
+        <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" style="height:28px;vertical-align:middle" />
+      </a>
+      <a id="signup-header" class="header-btn primary" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="signup-full">Sign up on Render</span>
+        <span class="signup-short">Sign up</span>
+      </a>
+      <button class="header-btn" onclick="toggleTheme()" title="Toggle theme" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.73 12.73l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <h2>Review a draft from three angles, then revise it</h2>
+      <p>
+        Paste a draft. Render Workflows fans the work out to three Mastra reviewer agents in parallel
+        (technical clarity, structure, usefulness), then a Mastra editor agent rewrites the piece.
+      </p>
+    </div>
+
+    <label for="draft">Draft</label>
+    <textarea id="draft" placeholder="Paste a draft to review…"></textarea>
+    <div class="row">
+      <button class="run-btn" id="run-btn" type="button">Run pipeline</button>
+      <button class="ghost" id="sample-btn" type="button">Load sample</button>
+    </div>
+
+    <div class="activity-feed" id="activity-feed"></div>
+    <div class="error-box" id="error-box"></div>
+    <div class="cards" id="results"></div>
+  </main>
+
+  <footer>
+    <span>Built with</span>
+    <a href="https://mastra.ai" target="_blank" rel="noopener noreferrer">Mastra</a>
+    <span class="sep">&middot;</span>
+    <a href="https://render.com/docs/workflows" target="_blank" rel="noopener noreferrer">Workflows docs</a>
+    <span class="sep">&middot;</span>
+    <a href="https://github.com/ojusave/render-workflows-mastra" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </footer>
+
+  <script>
+    const SAMPLE = "Render workflows let you run stuff in the background. Its pretty useful when you have agents that take a long time. You can also run things in parallel which is good. This draft should be more specific about how task runs work, why retries matter, and who should use a parent task versus calling each stage from the web service.";
+
+    function renderSignupUrlWithUtms(content) {
+      const params = new URLSearchParams({
+        utm_source: "github",
+        utm_medium: "referral",
+        utm_campaign: "ojus_demos",
+        utm_content: content || "navbar_button",
+      });
+      return "https://dashboard.render.com/register?" + params.toString();
+    }
+
+    document.getElementById("signup-header").href = renderSignupUrlWithUtms("navbar_button");
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.className === "dark" ? "light" : "dark";
+      html.className = next;
+      localStorage.setItem("theme", next);
+    }
+
+    const feed = document.getElementById("activity-feed");
+    const results = document.getElementById("results");
+    const errorBox = document.getElementById("error-box");
+    const runBtn = document.getElementById("run-btn");
+    const draftEl = document.getElementById("draft");
+
+    document.getElementById("sample-btn").onclick = () => {
+      draftEl.value = SAMPLE;
+    };
+
+    const STEPS = [
+      { id: "starting", label: "<strong>Start</strong> editorial_pipeline" },
+      { id: "reviewing", label: "<strong>Review</strong> from three perspectives in parallel" },
+      { id: "done", label: "<strong>Revise</strong> with the editor agent" },
+    ];
+
+    function setStep(id, state) {
+      const item = document.getElementById("step-" + id);
+      if (!item) return;
+      item.className = "activity-item " + state;
+    }
+
+    function renderSteps() {
+      feed.innerHTML = STEPS.map((s) =>
+        `<div class="activity-item" id="step-${s.id}"><div class="activity-track"><div class="indicator"></div></div><div class="label">${s.label}</div></div>`
+      ).join("");
+    }
+
+    function showError(message) {
+      errorBox.style.display = "block";
+      errorBox.textContent = message;
+    }
+
+    function renderResult(data) {
+      const reviews = Array.isArray(data.reviews) ? data.reviews : [];
+      const reviewCards = reviews.map((r) =>
+        `<div class="card"><h3>${escapeHtml(r.focus || "Review")}</h3><p>${escapeHtml(r.feedback || "")}</p></div>`
+      ).join("");
+      results.innerHTML =
+        reviewCards +
+        `<div class="card"><h3>Revised draft</h3><div class="revised">${escapeHtml(data.draft || "")}</div></div>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    runBtn.onclick = async () => {
+      const draft = draftEl.value.trim();
+      if (!draft) {
+        showError("Paste a draft first.");
+        return;
+      }
+      errorBox.style.display = "none";
+      results.innerHTML = "";
+      renderSteps();
+      setStep("starting", "active");
+      runBtn.disabled = true;
+
+      try {
+        const res = await fetch("/review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ draft }),
+        });
+        if (!res.ok || !res.body) {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          throw new Error(err.error || "Request failed");
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const chunks = buf.split("\n\n");
+          buf = chunks.pop() || "";
+          for (const chunk of chunks) parseSse(chunk);
+        }
+      } catch (err) {
+        setStep("starting", "error");
+        setStep("reviewing", "error");
+        setStep("done", "error");
+        showError(err instanceof Error ? err.message : String(err));
+      } finally {
+        runBtn.disabled = false;
+      }
+    };
+
+    function parseSse(chunk) {
+      const lines = chunk.split("\n");
+      let event = "message";
+      let data = "";
+      for (const line of lines) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        if (line.startsWith("data:")) data += line.slice(5).trim();
+      }
+      if (!data) return;
+      let payload;
+      try { payload = JSON.parse(data); } catch { return; }
+
+      if (event === "status") {
+        if (payload.phase === "starting") setStep("starting", "active");
+        if (payload.phase === "reviewing") {
+          setStep("starting", "done");
+          setStep("reviewing", "active");
+        }
+      }
+      if (event === "done") {
+        setStep("starting", "done");
+        setStep("reviewing", "done");
+        setStep("done", "done");
+        renderResult(payload);
+      }
+      if (event === "error") {
+        setStep("reviewing", "error");
+        setStep("done", "error");
+        showError(payload.message || "Pipeline failed");
+      }
+    }
+  </script>
+</body>
+</html>

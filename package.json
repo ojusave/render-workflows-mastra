@@ -1,0 +1,29 @@
+{
+  "name": "render-workflows-mastra",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "Editorial pipeline powered by Mastra agents and Render Workflows",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && cp -r static dist/static",
+    "start": "node dist/main.js",
+    "start:tasks": "node dist/tasks/index.js",
+    "dev:workflows": "tsx tasks/index.ts"
+  },
+  "dependencies": {
+    "@mastra/core": "^1.51.0",
+    "@renderinc/sdk": "^0.5.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

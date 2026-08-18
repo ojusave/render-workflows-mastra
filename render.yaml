@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://render.com/schema/render.yaml.json
+#
+# Mastra editorial pipeline on Render Workflows.
+# Deploy: https://render.com/deploy?repo=https://github.com/ojusave/render-workflows-mastra
+#
+# The Workflow service (render-workflows-mastra-workflow) is created separately:
+# Dashboard → New → Workflow, or scripts/create-workflow-on-render.sh
+# Start command: node dist/tasks/index.js
+
+previews:
+  generation: off
+
+projects:
+  - name: render-workflows-mastra
+    environments:
+      - name: production
+        services:
+          - type: web
+            name: render-workflows-mastra
+            runtime: node
+            region: oregon
+            plan: starter
+            buildCommand: npm install && npm run build
+            startCommand: node dist/main.js
+            healthCheckPath: /health
+            envVars:
+              - key: RENDER_API_KEY
+                displayName: Render API Key
+                description: "Required: Render API key for triggering workflow tasks. https://render.com/docs/api#1-create-an-api-key"
+                required: true
+                sensitive: true
+                sync: false
+              - key: WORKFLOW_SLUG
+                displayName: Workflow Slug
+                description: "Slug of the workflow service (create render-workflows-mastra-workflow in the dashboard)"
+                value: render-workflows-mastra-workflow
