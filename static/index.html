@@ -96,6 +96,12 @@
     }
     .live.done { color: var(--green); }
     .timeline { border: 1px solid var(--border); background: var(--surface); padding: 0.75rem 1rem 0.4rem; margin-bottom: 0.85rem; }
+    .t-axis {
+      display: grid; grid-template-columns: 10.5rem 1fr 4.5rem; gap: 0.75rem;
+      font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace;
+      margin-bottom: 0.15rem;
+    }
+    .t-axis-track { display: flex; justify-content: space-between; }
     .t-row {
       display: grid; grid-template-columns: 10.5rem 1fr 4.5rem; gap: 0.75rem;
       align-items: center; min-height: 2.4rem; border-top: 1px solid var(--border);
@@ -103,13 +109,16 @@
     .t-label { font-size: 0.78rem; color: var(--text-strong); }
     .t-label .task { display: block; font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace; }
     .t-track { position: relative; height: 0.85rem; background: var(--track); overflow: hidden; }
-    .t-bar { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--bar, var(--render-purple)); }
+    .t-bar {
+      position: absolute; top: 0; bottom: 0; left: 0; width: 0;
+      background: var(--bar, var(--render-purple)); min-width: 2px;
+    }
     .t-bar.running {
-      animation: grow 10s linear forwards, stripe 0.8s linear infinite;
+      animation: stripe 0.8s linear infinite;
+      background-size: 20px 20px;
       background-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(255,255,255,0.2) 5px, rgba(255,255,255,0.2) 10px);
     }
-    .t-bar.complete { width: 100%; }
-    .t-bar.error { width: 100%; background: var(--red); }
+    .t-bar.error { background: var(--red); }
     .t-state { font-size: 0.68rem; text-align: right; font-weight: 600; color: var(--text-dim); font-variant-numeric: tabular-nums; }
     .t-state.running { color: var(--render-purple); }
     .t-state.complete { color: var(--green); }
@@ -132,7 +141,21 @@
     .badge.running { color: #fff; background: var(--render-purple); border-color: var(--render-purple); }
     .badge.complete { color: var(--green); border-color: rgba(34,197,94,0.45); }
     .verdict { font-size: 0.82rem; line-height: 1.45; color: var(--text); }
+    .verdict strong, .notes strong, .md strong { font-weight: 650; color: var(--text-strong); }
+    .verdict em, .notes em, .md em { font-style: italic; }
+    .verdict code, .notes code, .md code {
+      font-family: ui-monospace, Menlo, monospace; font-size: 0.85em;
+      background: var(--overlay-medium); padding: 0.05em 0.3em;
+    }
     .notes { list-style: disc; padding-left: 1.1rem; font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; }
+    .md ul { list-style: disc; padding-left: 1.25rem; margin: 0 0 0.65rem; }
+    .md ol { list-style: decimal; padding-left: 1.25rem; margin: 0 0 0.65rem; }
+    .rewrite .body.md ul, .rewrite .body.md ol { font-size: inherit; color: inherit; line-height: 1.7; }
+    .md p { margin: 0 0 0.65rem; }
+    .md p:last-child { margin-bottom: 0; }
+    .md h3, .md h4 { font-family: 'Inter', sans-serif; font-weight: 600; color: var(--text-strong); margin: 0.7rem 0 0.35rem; }
+    .md h3 { font-size: 0.9rem; }
+    .md h4 { font-size: 0.8rem; }
     .pulse {
       height: 0.45rem; width: 40%; background: var(--overlay-medium);
       animation: pulse 1.1s ease-in-out infinite;
@@ -141,7 +164,8 @@
       border: 1px solid rgba(108,99,255,0.35); background: var(--surface); padding: 1.1rem 1.2rem;
     }
     .rewrite h3 { font-size: 0.75rem; font-weight: 600; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; color: var(--render-purple); margin-bottom: 0.65rem; }
-    .rewrite .body { font-size: 0.95rem; line-height: 1.7; color: var(--text-strong); white-space: pre-wrap; }
+    .rewrite .body { font-size: 0.95rem; line-height: 1.7; color: var(--text-strong); }
+    .rewrite .body.md { white-space: normal; }
     details.original { margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-dim); }
     details.original summary { cursor: pointer; }
     details.original p { margin-top: 0.4rem; white-space: pre-wrap; color: var(--text-muted); }
@@ -153,11 +177,10 @@
     }
     footer a { color: var(--text-muted); }
     footer .sep { color: var(--sep); }
-    @keyframes grow { from { width: 10%; } to { width: 90%; } }
     @keyframes stripe { from { background-position: 0 0; } to { background-position: 20px 0; } }
     @keyframes pulse { 0%, 100% { opacity: 0.35; width: 36%; } 50% { opacity: 1; width: 70%; } }
     @media (max-width: 760px) {
-      .cards, .board, .t-row { grid-template-columns: 1fr; }
+      .cards, .board, .t-row, .t-axis { grid-template-columns: 1fr; }
       .signup-full { display: none; } .signup-short { display: inline; }
       header .tag { display: none; }
     }
@@ -208,7 +231,14 @@
         </div>
         <div class="live" id="live">LIVE · 0.0s</div>
       </div>
-      <div class="timeline" id="timeline-rows"></div>
+      <div class="timeline">
+        <div class="t-axis">
+          <span></span>
+          <div class="t-axis-track"><span>0s</span><span id="axis-end">0s</span></div>
+          <span></span>
+        </div>
+        <div id="timeline-rows"></div>
+      </div>
       <div class="cards" id="review-cards"></div>
       <div id="rewrite"></div>
       <div class="row" style="margin-top:1rem">
@@ -267,6 +297,46 @@
     function escapeHtml(s) {
       return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
+    function inlineMd(s) {
+      return escapeHtml(s)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/__(.+?)__/g, "<strong>$1</strong>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+    }
+    function mdToHtml(src) {
+      const lines = String(src || "").replace(/\r\n/g, "\n").split("\n");
+      const out = [];
+      let list = null;
+      const close = () => {
+        if (list) { out.push("</" + list + ">"); list = null; }
+      };
+      for (const line of lines) {
+        const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+        const ul = line.match(/^\s*[-*]\s+(.*)$/);
+        const h = line.match(/^(#{1,3})\s+(.*)$/);
+        if (ol) {
+          if (list !== "ol") { close(); out.push("<ol>"); list = "ol"; }
+          out.push("<li>" + inlineMd(ol[1]) + "</li>");
+          continue;
+        }
+        if (ul) {
+          if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; }
+          out.push("<li>" + inlineMd(ul[1]) + "</li>");
+          continue;
+        }
+        close();
+        if (!line.trim()) continue;
+        if (h) {
+          const n = Math.min(h[1].length + 2, 4);
+          out.push("<h" + n + ">" + inlineMd(h[2]) + "</h" + n + ">");
+          continue;
+        }
+        out.push("<p>" + inlineMd(line) + "</p>");
+      }
+      close();
+      return out.join("");
+    }
     function fmt(ms) {
       const s = ms / 1000;
       return s < 10 ? s.toFixed(1) + "s" : Math.round(s) + "s";
@@ -296,16 +366,43 @@
     }
 
     function paintRows() {
-      document.getElementById("timeline-rows").innerHTML = ROWS.map((row) => {
+      const now = Date.now();
+      const total = Math.max(now - t0, 1);
+      const axisEnd = document.getElementById("axis-end");
+      if (axisEnd) axisEnd.textContent = fmt(total);
+      const root = document.getElementById("timeline-rows");
+      if (root.dataset.built !== "1") {
+        root.innerHTML = ROWS.map((row) => `
+          <div class="t-row ${row.cls}">
+            <div class="t-label">${escapeHtml(row.title)}<span class="task">${row.task}</span></div>
+            <div class="t-track"><div class="t-bar" id="bar-${cssId(row.id)}"></div></div>
+            <div class="t-state" id="st-${cssId(row.id)}">wait</div>
+          </div>`).join("");
+        root.dataset.built = "1";
+      }
+      ROWS.forEach((row) => {
         const st = state[row.id] || { status: "pending" };
-        const elapsed = st.startedAt && st.status === "running" ? fmt(Date.now() - st.startedAt) : "";
-        const label = st.status === "complete" ? "done" : st.status === "running" ? elapsed : st.status === "error" ? "failed" : "wait";
-        return `<div class="t-row ${row.cls}">
-          <div class="t-label">${escapeHtml(row.title)}<span class="task">${row.task}</span></div>
-          <div class="t-track"><div class="t-bar ${st.status === "running" || st.status === "complete" || st.status === "error" ? st.status : ""}"></div></div>
-          <div class="t-state ${st.status}">${label}</div>
-        </div>`;
-      }).join("");
+        const bar = document.getElementById("bar-" + cssId(row.id));
+        const label = document.getElementById("st-" + cssId(row.id));
+        if (!bar || !label) return;
+        bar.className = "t-bar" + (st.status === "running" || st.status === "complete" || st.status === "error" ? " " + st.status : "");
+        if (!st.startedAt) {
+          bar.style.left = "0";
+          bar.style.width = "0";
+          label.textContent = "wait";
+          label.className = "t-state pending";
+          return;
+        }
+        const start = Math.max(0, st.startedAt - t0);
+        const end = Math.max(start, (st.endedAt ?? now) - t0);
+        const leftPct = (start / total) * 100;
+        const widthPct = Math.min(100 - leftPct, Math.max((end - start) / total, 0.015) * 100);
+        bar.style.left = leftPct + "%";
+        bar.style.width = widthPct + "%";
+        const elapsed = fmt(end - start);
+        label.textContent = st.status === "complete" ? elapsed : st.status === "running" ? elapsed : st.status === "error" ? "failed" : "wait";
+        label.className = "t-state " + st.status;
+      });
     }
 
     function paintCards() {
@@ -313,8 +410,8 @@
         const st = state[row.id] || { status: "pending" };
         let body = `<div class="pulse"></div><div class="pulse"></div>`;
         if (st.status === "complete") {
-          const notes = (st.notes || []).map((n) => `<li>${escapeHtml(n)}</li>`).join("");
-          body = `<p class="verdict">${escapeHtml(st.verdict || "Review in.")}</p>${notes ? `<ul class="notes">${notes}</ul>` : ""}`;
+          const notes = (st.notes || []).map((n) => `<li>${inlineMd(n)}</li>`).join("");
+          body = `<p class="verdict">${inlineMd(st.verdict || "Review in.")}</p>${notes ? `<ul class="notes">${notes}</ul>` : ""}`;
         } else if (st.status === "running") {
           body = `<p class="verdict">Running on its own task instance…</p><div class="pulse"></div>`;
         } else {
@@ -332,7 +429,7 @@
       if (!revised) { el.innerHTML = ""; return; }
       el.innerHTML = `<div class="rewrite">
         <h3>Revised draft</h3>
-        <div class="body">${escapeHtml(revised)}</div>
+        <div class="body md">${mdToHtml(revised)}</div>
         <details class="original"><summary>Show original</summary><p>${escapeHtml(original)}</p></details>
       </div>`;
     }
@@ -357,8 +454,8 @@
       document.body.classList.add("is-running");
       document.body.classList.remove("is-done");
       ROWS.forEach((row) => { state[row.id] = { status: "pending" }; });
-      paintBoard(); paintRows(); paintCards(); paintRewrite("", "");
       t0 = Date.now();
+      paintBoard(); paintRows(); paintCards(); paintRewrite("", "");
       liveEl.className = "live";
       clearInterval(clock);
       clock = setInterval(tick, 250);
@@ -416,13 +513,25 @@
         }
         if (payload.status === "complete") {
           state[id].status = "complete";
+          if (!state[id].startedAt) state[id].startedAt = Date.now();
+          if (typeof payload.durationMs === "number") {
+            state[id].endedAt = state[id].startedAt + payload.durationMs;
+          } else {
+            state[id].endedAt = Date.now();
+          }
           if (payload.review) applyReview(payload.review);
+        }
+        if (payload.status === "error") {
+          state[id].status = "error";
+          state[id].endedAt = Date.now();
         }
         paintBoard(); paintRows(); paintCards();
       }
       if (event === "done") {
         (payload.reviews || []).forEach(applyReview);
-        state.revise = { status: "complete" };
+        if (!state.revise) state.revise = { status: "complete" };
+        state.revise.status = "complete";
+        if (!state.revise.endedAt) state.revise.endedAt = Date.now();
         document.body.classList.remove("is-running");
         document.body.classList.add("is-done");
         liveEl.className = "live done";

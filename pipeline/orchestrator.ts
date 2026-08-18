@@ -34,6 +34,25 @@ async function poll(taskRunId: string) {
   return details;
 }
 
+function timing(
+  details: { startedAt?: string; completedAt?: string },
+  fallbackStart: number
+) {
+  const at = Date.now();
+  let durationMs = Math.max(0, at - fallbackStart);
+  if (details.startedAt && details.completedAt) {
+    const parsed =
+      Date.parse(details.completedAt) - Date.parse(details.startedAt);
+    if (Number.isFinite(parsed) && parsed >= 0) durationMs = parsed;
+  }
+  return {
+    at,
+    startedAt: details.startedAt,
+    completedAt: details.completedAt,
+    durationMs,
+  };
+}
+
 export async function* runEditorialPipeline(
   draft: string
 ): AsyncGenerator<string> {
@@ -43,18 +62,24 @@ export async function* runEditorialPipeline(
     startedAt,
   });
 
-  const reviewRuns: Array<{ focus: string; taskRunId: string }> = [];
+  const reviewRuns: Array<{
+    focus: string;
+    taskRunId: string;
+    startedMs: number;
+  }> = [];
   for (const focus of REVIEW_FOCUSES) {
     const started = await render.workflows.startTask(
       `${WORKFLOW_SLUG}/review_draft`,
       [draft, focus]
     );
-    reviewRuns.push({ focus, taskRunId: started.taskRunId });
+    const startedMs = Date.now();
+    reviewRuns.push({ focus, taskRunId: started.taskRunId, startedMs });
     yield sse("stage", {
       rowId: focus,
       task: "review_draft",
       status: "running",
       taskRunId: started.taskRunId,
+      at: startedMs,
     });
   }
 
@@ -94,6 +119,7 @@ export async function* runEditorialPipeline(
         review,
         done: reviews.length,
         total: reviewRuns.length,
+        ...timing(details, info.startedMs),
       });
     }
   }
@@ -103,11 +129,13 @@ export async function* runEditorialPipeline(
     `${WORKFLOW_SLUG}/revise_draft`,
     [draft, reviews]
   );
+  const reviseStartedMs = Date.now();
   yield sse("stage", {
     rowId: "revise",
     task: "revise_draft",
     status: "running",
     taskRunId: reviseStarted.taskRunId,
+    at: reviseStartedMs,
   });
 
   while (true) {
@@ -125,6 +153,7 @@ export async function* runEditorialPipeline(
       task: "revise_draft",
       status: "complete",
       taskRunId: reviseStarted.taskRunId,
+      ...timing(details, reviseStartedMs),
     });
     yield sse("done", {
       draft: revised.draft ?? "",
