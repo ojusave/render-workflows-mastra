@@ -19,78 +19,76 @@
       --green: #22c55e;
       --red: #ef4444;
       --amber: #f59e0b;
+      --blue: #3b82f6;
     }
     html.light {
       --bg: #fafafa; --surface: #ffffff; --border: rgba(0,0,0,0.08);
       --text: #18181b; --text-muted: #52525b; --text-dim: #a1a1aa;
       --text-strong: #09090b; --overlay-subtle: rgba(0,0,0,0.03);
-      --overlay-medium: rgba(0,0,0,0.05); --sep: #e4e4e7;
+      --overlay-medium: rgba(0,0,0,0.05); --sep: #e4e4e7; --track: rgba(0,0,0,0.06);
     }
     html.dark {
       --bg: #0a0a0a; --surface: #141416; --border: rgba(255,255,255,0.08);
       --text: #e4e4e7; --text-muted: #71717a; --text-dim: #52525b;
       --text-strong: #fafafa; --overlay-subtle: rgba(255,255,255,0.04);
-      --overlay-medium: rgba(255,255,255,0.06); --sep: #27272a;
+      --overlay-medium: rgba(255,255,255,0.06); --sep: #27272a; --track: rgba(255,255,255,0.06);
     }
-    html, body {
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
+    html, body { min-height: 100dvh; display: flex; flex-direction: column; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--bg); color: var(--text);
     }
     h1, h2, h3 { font-family: 'Roboto', -apple-system, sans-serif; font-weight: 300; }
     a { color: var(--render-purple); text-decoration: none; }
     a:hover { text-decoration: underline; }
     header {
-      padding: 0.625rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background: var(--bg);
-      flex-shrink: 0;
+      padding: 0.625rem 1.25rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.75rem; background: var(--bg); flex-shrink: 0;
     }
     header .title-group { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
     header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.4); flex-shrink: 0; }
-    header h1 { font-size: 0.875rem; font-weight: 600; font-family: 'Inter', sans-serif; color: var(--text-strong); letter-spacing: -0.01em; white-space: nowrap; }
+    header h1 { font-size: 0.875rem; font-weight: 600; font-family: 'Inter', sans-serif; color: var(--text-strong); }
     header .tag { font-size: 0.6rem; padding: 0.125rem 0.4rem; background: var(--overlay-medium); color: var(--text-muted); font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; border: 1px solid var(--border); }
-    header .actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    header .actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
     .header-btn {
       font-size: 0.725rem; font-weight: 500; padding: 0.3rem 0.6rem;
       border: 1px solid var(--border); background: transparent; color: var(--text-muted);
-      cursor: pointer; transition: all 0.15s; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 0.3rem; font-family: 'Inter', sans-serif;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: 'Inter', sans-serif;
     }
     .header-btn:hover { background: var(--overlay-subtle); color: var(--text); text-decoration: none; }
     .header-btn.primary { background: var(--render-purple); border-color: var(--render-purple); color: #fff; }
     .header-btn.primary:hover { background: var(--render-purple-hover); }
-    .header-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .header-btn svg { width: 12px; height: 12px; }
     .signup-short { display: none; }
-    main {
-      flex: 1 0 auto;
-      width: 100%;
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 3rem;
+    main { flex: 1 0 auto; width: 100%; max-width: 960px; margin: 0 auto; padding: 1.75rem 1.25rem 3rem; }
+    .hero h2 { font-size: 1.45rem; color: var(--text-strong); margin-bottom: 0.4rem; }
+    .hero p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; max-width: 42rem; }
+    .steps {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
+      margin: 1.25rem 0 1.5rem;
     }
-    .hero h2 { font-size: 1.35rem; color: var(--text-strong); margin-bottom: 0.4rem; }
-    .hero p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.25rem; }
+    .step {
+      border: 1px solid var(--border); background: var(--surface); padding: 0.85rem 0.95rem;
+    }
+    .step .n {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--render-purple); margin-bottom: 0.3rem;
+    }
+    .step h3 { font-size: 0.85rem; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; }
+    .step p { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; }
     label { display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 0.4rem; }
     textarea {
-      width: 100%; min-height: 160px; resize: vertical;
-      padding: 0.85rem 1rem; border: 1px solid var(--border); background: var(--surface);
-      color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6;
+      width: 100%; min-height: 140px; resize: vertical; padding: 0.85rem 1rem;
+      border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6;
     }
     textarea:focus { outline: 1px solid var(--render-purple); }
-    .row { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0 1.5rem; }
+    .row { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0 0; }
     .run-btn {
       background: var(--render-purple); color: #fff; border: none;
-      padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 600;
-      cursor: pointer; font-family: 'Inter', sans-serif;
+      padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif;
     }
     .run-btn:hover { background: var(--render-purple-hover); }
     .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -99,43 +97,87 @@
       padding: 0.55rem 0.85rem; font-size: 0.8rem; cursor: pointer; font-family: 'Inter', sans-serif;
     }
     .ghost:hover { color: var(--text); background: var(--overlay-subtle); }
-    .activity-feed { display: flex; flex-direction: column; margin-top: 0.5rem; }
-    .activity-item { display: flex; align-items: stretch; padding: 0.5rem 0; font-size: 0.8rem; color: var(--text-muted); }
-    .activity-track { display: flex; flex-direction: column; align-items: center; width: 12px; margin-right: 0.625rem; padding-top: 0.15rem; }
-    .indicator { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
-    .activity-track::after { content: ""; flex: 1; width: 2px; margin-top: 2px; background: var(--border); }
-    .activity-item:last-child .activity-track::after { display: none; }
-    .activity-item.active .indicator { background: var(--render-purple); box-shadow: 0 0 8px rgba(108,99,255,0.5); animation: pulse 1.5s ease-in-out infinite; }
-    .activity-item.done .indicator { background: var(--green); }
-    .activity-item.error .indicator { background: var(--red); }
-    .activity-item .label { flex: 1; line-height: 1.5; padding-top: 0.1rem; }
-    .activity-item .label strong { color: var(--text); font-weight: 600; }
-    .error-box { display: none; margin-top: 0.75rem; padding: 0.75rem 1rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: var(--red); font-size: 0.8rem; }
-    .cards { display: grid; gap: 0.75rem; margin-top: 1.25rem; }
-    .card {
-      background: var(--surface); border: 1px solid var(--border); padding: 1rem 1.1rem;
+    #run-panel { display: none; margin-top: 1.5rem; }
+    .status-bar {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+      margin-bottom: 0.85rem; font-size: 0.8rem;
     }
-    .card h3 { font-size: 0.75rem; font-weight: 600; font-family: 'Inter', sans-serif; color: var(--text-strong); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.5rem; }
-    .card p { font-size: 0.8rem; line-height: 1.65; color: var(--text-muted); white-space: pre-wrap; }
-    .revised { white-space: pre-wrap; font-size: 0.9rem; line-height: 1.7; color: var(--text); }
+    .live {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.72rem;
+      color: var(--render-purple); font-weight: 600; letter-spacing: 0.04em;
+    }
+    .live.done { color: var(--green); }
+    .status-text { color: var(--text); font-weight: 500; }
+    .run-meta { color: var(--text-dim); font-size: 0.72rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .timeline {
+      border: 1px solid var(--border); background: var(--surface); padding: 0.85rem 1rem 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .timeline-head {
+      display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem;
+    }
+    .timeline-head h3 { font-size: 0.75rem; font-weight: 600; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-strong); }
+    .timeline-head p { font-size: 0.7rem; color: var(--text-dim); }
+    .t-row {
+      display: grid; grid-template-columns: 11.5rem 1fr 5.5rem; gap: 0.75rem;
+      align-items: center; min-height: 2.6rem; border-top: 1px solid var(--border);
+    }
+    .t-label { font-size: 0.75rem; color: var(--text); min-width: 0; }
+    .t-label .task { display: block; font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .t-track { position: relative; height: 1.15rem; background: var(--track); overflow: hidden; }
+    .t-bar {
+      position: absolute; top: 0; bottom: 0; left: 0; width: 0;
+      background: var(--bar, var(--render-purple)); min-width: 0;
+    }
+    .t-bar.running {
+      animation: grow 8s linear forwards, stripe 1s linear infinite;
+      background-image: repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.18) 6px, rgba(255,255,255,0.18) 12px);
+    }
+    .t-bar.complete { width: 100%; }
+    .t-bar.error { background: var(--red); width: 100%; }
+    .t-state { font-size: 0.68rem; color: var(--text-dim); text-align: right; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+    .t-state.running { color: var(--render-purple); }
+    .t-state.complete { color: var(--green); }
+    .t-state.error { color: var(--red); }
+    .row-clarity { --bar: var(--blue); }
+    .row-structure { --bar: var(--amber); }
+    .row-useful { --bar: var(--green); }
+    .row-revise { --bar: var(--render-purple); }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); padding: 0.9rem 1rem; min-height: 8rem;
+    }
+    .card header-ish, .card .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem; }
+    .card h3 { font-size: 0.75rem; font-weight: 600; font-family: 'Inter', sans-serif; color: var(--text-strong); }
+    .badge {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      padding: 0.12rem 0.35rem; border: 1px solid var(--border); color: var(--text-dim);
+    }
+    .badge.running { color: var(--render-purple); border-color: rgba(108,99,255,0.4); }
+    .badge.complete { color: var(--green); border-color: rgba(34,197,94,0.4); }
+    .card p, .waiting { font-size: 0.78rem; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; }
+    .waiting { color: var(--text-dim); font-style: italic; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .compare .card { min-height: 10rem; }
+    .revised { white-space: pre-wrap; font-size: 0.85rem; line-height: 1.7; color: var(--text); }
+    .error-box { display: none; margin-top: 0.75rem; padding: 0.75rem 1rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: var(--red); font-size: 0.8rem; }
     footer {
-      flex-shrink: 0;
-      margin-top: auto;
-      padding: 0.75rem 1.25rem;
-      border-top: 1px solid var(--border);
+      flex-shrink: 0; margin-top: auto; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.375rem;
       font-size: 0.675rem; color: var(--text-dim); background: var(--bg); text-align: center;
     }
     footer a { color: var(--text-muted); }
     footer a:hover { color: var(--text); }
     footer .sep { color: var(--sep); }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    @media (max-width: 640px) {
+    @keyframes grow { from { width: 8%; } to { width: 92%; } }
+    @keyframes stripe { from { background-position: 0 0; } to { background-position: 24px 0; } }
+    @media (max-width: 800px) {
+      .steps, .cards, .compare, .t-row { grid-template-columns: 1fr; }
+      .t-row { grid-template-columns: 1fr; padding: 0.5rem 0; }
+      .t-state { text-align: left; }
       .signup-full { display: none; }
       .signup-short { display: inline; }
-      header h1 { font-size: 0.8rem; }
       header .tag { display: none; }
-      .deploy-btn img { height: 24px; }
     }
   </style>
 </head>
@@ -162,23 +204,57 @@
 
   <main>
     <div class="hero">
-      <h2>Review a draft from three angles, then revise it</h2>
+      <h2>Three reviewers read the same draft at the same time</h2>
       <p>
-        Paste a draft. Render Workflows fans the work out to three Mastra reviewer agents in parallel
-        (technical clarity, structure, usefulness), then a Mastra editor agent rewrites the piece.
+        Each review is its own Render Workflow task, so a retry on one does not restart the others.
+        When all three finish, an editor task rewrites the piece from their notes.
       </p>
     </div>
 
-    <label for="draft">Draft</label>
-    <textarea id="draft" placeholder="Paste a draft to review…"></textarea>
-    <div class="row">
-      <button class="run-btn" id="run-btn" type="button">Run pipeline</button>
-      <button class="ghost" id="sample-btn" type="button">Load sample</button>
+    <div class="steps">
+      <div class="step">
+        <div class="n">Step 1</div>
+        <h3>Paste a draft</h3>
+        <p>The web service only accepts HTTP. It does not run the models itself.</p>
+      </div>
+      <div class="step">
+        <div class="n">Step 2</div>
+        <h3>Fan out three reviews</h3>
+        <p><code>review_draft</code> starts three times in parallel: clarity, structure, usefulness.</p>
+      </div>
+      <div class="step">
+        <div class="n">Step 3</div>
+        <h3>Editor revises</h3>
+        <p><code>revise_draft</code> waits for all three, then returns one rewrite.</p>
+      </div>
     </div>
 
-    <div class="activity-feed" id="activity-feed"></div>
+    <label for="draft">Draft</label>
+    <textarea id="draft"></textarea>
+    <div class="row">
+      <button class="run-btn" id="run-btn" type="button">Run pipeline</button>
+      <button class="ghost" id="sample-btn" type="button">Reset sample</button>
+    </div>
     <div class="error-box" id="error-box"></div>
-    <div class="cards" id="results"></div>
+
+    <div id="run-panel">
+      <div class="status-bar">
+        <span class="live" id="live">LIVE</span>
+        <span class="status-text" id="status-text">Starting reviewer tasks</span>
+        <span class="run-meta" id="run-meta"></span>
+      </div>
+      <div class="timeline">
+        <div class="timeline-head">
+          <div>
+            <h3>Execution timeline</h3>
+            <p>Bar overlap is the parallel fan-out. The editor row starts only after all three reviews complete.</p>
+          </div>
+        </div>
+        <div id="timeline-rows"></div>
+      </div>
+      <div class="cards" id="review-cards"></div>
+      <div class="compare" id="compare"></div>
+    </div>
   </main>
 
   <footer>
@@ -193,6 +269,13 @@
   <script>
     const SAMPLE = "Render workflows let you run stuff in the background. Its pretty useful when you have agents that take a long time. You can also run things in parallel which is good. This draft should be more specific about how task runs work, why retries matter, and who should use a parent task versus calling each stage from the web service.";
 
+    const ROWS = [
+      { id: "technical clarity", title: "Technical clarity", task: "review_draft", cls: "row-clarity" },
+      { id: "structure and flow", title: "Structure and flow", task: "review_draft", cls: "row-structure" },
+      { id: "reader usefulness", title: "Reader usefulness", task: "review_draft", cls: "row-useful" },
+      { id: "revise", title: "Editor rewrite", task: "revise_draft", cls: "row-revise" },
+    ];
+
     function renderSignupUrlWithUtms(content) {
       const params = new URLSearchParams({
         utm_source: "github",
@@ -202,7 +285,6 @@
       });
       return "https://dashboard.render.com/register?" + params.toString();
     }
-
     document.getElementById("signup-header").href = renderSignupUrlWithUtms("navbar_button");
 
     function toggleTheme() {
@@ -212,32 +294,66 @@
       localStorage.setItem("theme", next);
     }
 
-    const feed = document.getElementById("activity-feed");
-    const results = document.getElementById("results");
-    const errorBox = document.getElementById("error-box");
-    const runBtn = document.getElementById("run-btn");
     const draftEl = document.getElementById("draft");
+    const runBtn = document.getElementById("run-btn");
+    const errorBox = document.getElementById("error-box");
+    const panel = document.getElementById("run-panel");
+    const liveEl = document.getElementById("live");
+    const statusEl = document.getElementById("status-text");
+    const metaEl = document.getElementById("run-meta");
+    draftEl.value = SAMPLE;
+    document.getElementById("sample-btn").onclick = () => { draftEl.value = SAMPLE; };
 
-    document.getElementById("sample-btn").onclick = () => {
-      draftEl.value = SAMPLE;
-    };
+    const state = {};
+    let clock = null;
+    let t0 = 0;
 
-    const STEPS = [
-      { id: "starting", label: "<strong>Start</strong> editorial_pipeline" },
-      { id: "reviewing", label: "<strong>Review</strong> from three perspectives in parallel" },
-      { id: "done", label: "<strong>Revise</strong> with the editor agent" },
-    ];
-
-    function setStep(id, state) {
-      const item = document.getElementById("step-" + id);
-      if (!item) return;
-      item.className = "activity-item " + state;
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    function renderSteps() {
-      feed.innerHTML = STEPS.map((s) =>
-        `<div class="activity-item" id="step-${s.id}"><div class="activity-track"><div class="indicator"></div></div><div class="label">${s.label}</div></div>`
-      ).join("");
+    function fmt(ms) {
+      const s = ms / 1000;
+      return s < 10 ? s.toFixed(1) + "s" : Math.round(s) + "s";
+    }
+
+    function setStatus(text) { statusEl.textContent = text; }
+
+    function renderRows() {
+      document.getElementById("timeline-rows").innerHTML = ROWS.map((row) => {
+        const st = state[row.id] || { status: "pending" };
+        const barClass = st.status === "running" ? "running" : st.status === "complete" ? "complete" : st.status === "error" ? "error" : "";
+        const label = st.status === "pending" ? "Waiting" : st.status;
+        return `<div class="t-row ${row.cls}">
+          <div class="t-label">${escapeHtml(row.title)}<span class="task">${row.task}</span></div>
+          <div class="t-track"><div class="t-bar ${barClass}" id="bar-${cssId(row.id)}"></div></div>
+          <div class="t-state ${st.status}" id="st-${cssId(row.id)}">${label}</div>
+        </div>`;
+      }).join("");
+    }
+
+    function cssId(id) { return id.replace(/[^a-z0-9]+/gi, "-"); }
+
+    function renderCards() {
+      const reviews = ROWS.filter((r) => r.id !== "revise");
+      document.getElementById("review-cards").innerHTML = reviews.map((row) => {
+        const st = state[row.id] || { status: "pending" };
+        const body = st.feedback
+          ? `<p>${escapeHtml(st.feedback)}</p>`
+          : `<p class="waiting">${st.status === "running" ? "Reviewer is reading the draft…" : "Queued. Starts with the other two."}</p>`;
+        return `<div class="card">
+          <div class="card-top"><h3>${escapeHtml(row.title)}</h3><span class="badge ${st.status}">${st.status}</span></div>
+          ${body}
+        </div>`;
+      }).join("");
+    }
+
+    function renderCompare(original, revised) {
+      const el = document.getElementById("compare");
+      if (!revised) { el.innerHTML = ""; return; }
+      el.innerHTML = `
+        <div class="card"><div class="card-top"><h3>Original draft</h3></div><div class="revised">${escapeHtml(original)}</div></div>
+        <div class="card"><div class="card-top"><h3>Revised draft</h3><span class="badge complete">done</span></div><div class="revised">${escapeHtml(revised)}</div></div>`;
     }
 
     function showError(message) {
@@ -245,33 +361,34 @@
       errorBox.textContent = message;
     }
 
-    function renderResult(data) {
-      const reviews = Array.isArray(data.reviews) ? data.reviews : [];
-      const reviewCards = reviews.map((r) =>
-        `<div class="card"><h3>${escapeHtml(r.focus || "Review")}</h3><p>${escapeHtml(r.feedback || "")}</p></div>`
-      ).join("");
-      results.innerHTML =
-        reviewCards +
-        `<div class="card"><h3>Revised draft</h3><div class="revised">${escapeHtml(data.draft || "")}</div></div>`;
+    function startClock() {
+      t0 = Date.now();
+      liveEl.className = "live";
+      liveEl.textContent = "LIVE · 0.0s";
+      clearInterval(clock);
+      clock = setInterval(() => {
+        liveEl.textContent = "LIVE · " + fmt(Date.now() - t0);
+      }, 200);
     }
 
-    function escapeHtml(s) {
-      return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+    function stopClock(durationMs) {
+      clearInterval(clock);
+      liveEl.className = "live done";
+      liveEl.textContent = "DONE · " + fmt(durationMs ?? (Date.now() - t0));
     }
 
     runBtn.onclick = async () => {
       const draft = draftEl.value.trim();
-      if (!draft) {
-        showError("Paste a draft first.");
-        return;
-      }
+      if (!draft) { showError("Paste a draft first."); return; }
       errorBox.style.display = "none";
-      results.innerHTML = "";
-      renderSteps();
-      setStep("starting", "active");
+      panel.style.display = "block";
+      ROWS.forEach((row) => { state[row.id] = { status: "pending" }; });
+      renderRows();
+      renderCards();
+      renderCompare("", "");
+      metaEl.textContent = "";
+      setStatus("Starting three review_draft tasks…");
+      startClock();
       runBtn.disabled = true;
 
       try {
@@ -284,30 +401,31 @@
           const err = await res.json().catch(() => ({ error: res.statusText }));
           throw new Error(err.error || "Request failed");
         }
-
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buf = "";
-
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           buf += decoder.decode(value, { stream: true });
           const chunks = buf.split("\n\n");
           buf = chunks.pop() || "";
-          for (const chunk of chunks) parseSse(chunk);
+          for (const chunk of chunks) parseSse(chunk, draft);
         }
       } catch (err) {
-        setStep("starting", "error");
-        setStep("reviewing", "error");
-        setStep("done", "error");
+        stopClock();
         showError(err instanceof Error ? err.message : String(err));
+        Object.keys(state).forEach((id) => {
+          if (state[id].status === "running") state[id].status = "error";
+        });
+        renderRows();
+        renderCards();
       } finally {
         runBtn.disabled = false;
       }
     };
 
-    function parseSse(chunk) {
+    function parseSse(chunk, originalDraft) {
       const lines = chunk.split("\n");
       let event = "message";
       let data = "";
@@ -319,22 +437,54 @@
       let payload;
       try { payload = JSON.parse(data); } catch { return; }
 
-      if (event === "status") {
-        if (payload.phase === "starting") setStep("starting", "active");
-        if (payload.phase === "reviewing") {
-          setStep("starting", "done");
-          setStep("reviewing", "active");
+      if (event === "stage") {
+        const id = payload.rowId;
+        if (!state[id]) state[id] = { status: "pending" };
+        state[id].status = payload.status === "complete" ? "complete" : "running";
+        if (payload.taskRunId) {
+          state[id].taskRunId = payload.taskRunId;
+          metaEl.textContent = payload.taskRunId;
         }
+        if (payload.review && payload.review.feedback) state[id].feedback = payload.review.feedback;
+        if (payload.status === "running" && payload.task === "review_draft") {
+          setStatus(payload.rowId + " · review_draft running");
+        }
+        if (payload.status === "complete" && payload.task === "review_draft") {
+          setStatus((payload.done || 0) + " of " + (payload.total || 3) + " reviews done");
+        }
+        if (payload.status === "running" && payload.task === "revise_draft") {
+          setStatus("All reviews in. revise_draft is rewriting the draft");
+        }
+        renderRows();
+        renderCards();
       }
+
+      if (event === "status" && payload.phase === "revising") {
+        setStatus("All reviews in. Starting revise_draft…");
+      }
+
+      if (event === "heartbeat" && payload.rowId && payload.status) {
+        const label = payload.rowId === "revise" ? "revise_draft" : payload.rowId;
+        if (payload.status === "paused") setStatus(label + " queued on Render");
+        else if (payload.status === "pending") setStatus(label + " pending");
+      }
+
       if (event === "done") {
-        setStep("starting", "done");
-        setStep("reviewing", "done");
-        setStep("done", "done");
-        renderResult(payload);
+        stopClock(payload.durationMs);
+        setStatus("Pipeline finished");
+        (payload.reviews || []).forEach((r) => {
+          if (!state[r.focus]) state[r.focus] = { status: "complete" };
+          state[r.focus].status = "complete";
+          state[r.focus].feedback = r.feedback;
+        });
+        state.revise = { status: "complete" };
+        renderRows();
+        renderCards();
+        renderCompare(originalDraft, payload.draft || "");
       }
+
       if (event === "error") {
-        setStep("reviewing", "error");
-        setStep("done", "error");
+        stopClock();
         showError(payload.message || "Pipeline failed");
       }
     }

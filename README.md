@@ -2,7 +2,7 @@
 
 # Mastra Editorial Pipeline
 
-A distributed editorial pipeline combining **Render Workflows** for orchestration and **Mastra** agents for review and revision. Paste a draft and watch three reviewers run in parallel, then an editor rewrite the piece.
+A distributed editorial pipeline combining **Render Workflows** for orchestration and **Mastra** agents for review and revision. Three reviewer tasks run at the same time. An editor task rewrites from their notes.
 
 <p>
   <a href="https://render.com/deploy?repo=https://github.com/ojusave/render-workflows-mastra">
@@ -43,18 +43,18 @@ This repo demonstrates how to split a Mastra agent pipeline across Render Workfl
 ### How It Works
 
 1. **Browser** posts a draft to the **Express API** on Render
-2. **Express** starts `editorial_pipeline` and streams progress via SSE
-3. **Render Workflows** runs the parent task, which fans out three reviewer tasks, then revises:
+2. **Express** starts three `review_draft` task runs in parallel and streams each one over SSE
+3. After all three finish, Express starts `revise_draft` with their notes
 
 | Render Workflow Task | Mastra agent | What it does |
 | --- | --- | --- |
-| `review_draft` | Reviewer | Comments on one focus: technical clarity, structure and flow, or reader usefulness |
+| `review_draft` | Reviewer | One task run per focus: technical clarity, structure and flow, reader usefulness |
 | `revise_draft` | Editor | Rewrites the draft from the combined reviews |
-| `editorial_pipeline` | — | `Promise.all` on the three reviews, then calls `revise_draft` |
+| `editorial_pipeline` | — | Same graph as a single parent (`Promise.all` then revise), for CLI or Dashboard runs |
 
-4. The revised draft and the three reviews stream back to the browser
+The live UI starts the child tasks itself so you can see them overlap. That is the OpenRouter batch pattern: one unit of work, one task run.
 
-Calling `reviewDraft()` and `reviseDraft()` from the parent task creates chained runs. Each run gets its own compute plan, timeout, and retry policy.
+4. Open the live page, click **Run pipeline**, and watch the timeline before the rewrite appears.
 
 ## Quick Start
 

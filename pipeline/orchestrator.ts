@@ -1,13 +1,14 @@
 /**
- * Dispatches editorial_pipeline and yields SSE events while it runs.
- * Fan-out lives inside the workflow parent, not on this web process.
+ * Starts the same child tasks editorial_pipeline would: three review_draft
+ * runs in parallel, then revise_draft. Dispatching from the web lets SSE
+ * show each task run as it starts and finishes.
  */
 import { Render } from "@renderinc/sdk";
-import { REVIEW_FOCUSES } from "../shared/editorial.js";
+import { REVIEW_FOCUSES, type Review } from "../shared/editorial.js";
 
 const WORKFLOW_SLUG =
   process.env.WORKFLOW_SLUG || "render-workflows-mastra-workflow";
-const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || "3000", 10);
+const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || "1500", 10);
 
 const render = new Render();
 
@@ -15,45 +16,122 @@ function sse(event: string, data: Record<string, unknown>): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
+function isDone(status: string): boolean {
+  return status === "completed" || status === "succeeded";
+}
+
+function isFailed(status: string): boolean {
+  return status === "failed" || status === "canceled";
+}
+
+async function poll(taskRunId: string) {
+  const details = await render.workflows.getTaskRun(taskRunId);
+  if (isFailed(details.status)) {
+    throw new Error(
+      `Task ${taskRunId} ${details.status}: ${details.error ?? "unknown error"}`
+    );
+  }
+  return details;
+}
+
 export async function* runEditorialPipeline(
   draft: string
 ): AsyncGenerator<string> {
-  yield sse("status", { phase: "starting" });
+  const startedAt = Date.now();
+  yield sse("plan", {
+    focuses: [...REVIEW_FOCUSES],
+    startedAt,
+  });
 
-  const started = await render.workflows.startTask(
-    `${WORKFLOW_SLUG}/editorial_pipeline`,
-    [draft]
-  );
+  const reviewRuns: Array<{ focus: string; taskRunId: string }> = [];
+  for (const focus of REVIEW_FOCUSES) {
+    const started = await render.workflows.startTask(
+      `${WORKFLOW_SLUG}/review_draft`,
+      [draft, focus]
+    );
+    reviewRuns.push({ focus, taskRunId: started.taskRunId });
+    yield sse("stage", {
+      rowId: focus,
+      task: "review_draft",
+      status: "running",
+      taskRunId: started.taskRunId,
+    });
+  }
 
   yield sse("status", {
     phase: "reviewing",
-    taskRunId: started.taskRunId,
-    focuses: [...REVIEW_FOCUSES],
+    total: reviewRuns.length,
+    done: 0,
+  });
+
+  const pending = new Map(reviewRuns.map((run) => [run.taskRunId, run]));
+  const reviews: Review[] = [];
+
+  while (pending.size > 0) {
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+    for (const [id, info] of [...pending]) {
+      const details = await poll(id);
+      yield sse("heartbeat", {
+        rowId: info.focus,
+        task: "review_draft",
+        status: details.status,
+        remaining: pending.size,
+        done: reviews.length,
+        total: reviewRuns.length,
+      });
+      if (!isDone(details.status)) continue;
+      pending.delete(id);
+      const review = (details.results?.[0] ?? {
+        focus: info.focus,
+        feedback: "",
+      }) as Review;
+      reviews.push(review);
+      yield sse("stage", {
+        rowId: info.focus,
+        task: "review_draft",
+        status: "complete",
+        taskRunId: id,
+        review,
+        done: reviews.length,
+        total: reviewRuns.length,
+      });
+    }
+  }
+
+  yield sse("status", { phase: "revising" });
+  const reviseStarted = await render.workflows.startTask(
+    `${WORKFLOW_SLUG}/revise_draft`,
+    [draft, reviews]
+  );
+  yield sse("stage", {
+    rowId: "revise",
+    task: "revise_draft",
+    status: "running",
+    taskRunId: reviseStarted.taskRunId,
   });
 
   while (true) {
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-    const details = await render.workflows.getTaskRun(started.taskRunId);
-    const status = details.status;
-
-    if (status === "completed" || status === "succeeded") {
-      const result = (details.results?.[0] ?? null) as {
-        draft?: string;
-        reviews?: Array<{ focus: string; feedback: string }>;
-      } | null;
-      yield sse("done", {
-        draft: result?.draft ?? "",
-        reviews: result?.reviews ?? [],
-        taskRunId: started.taskRunId,
-      });
-      return;
-    }
-
-    if (status === "failed" || status === "canceled") {
-      const error = details.error ?? "unknown error";
-      throw new Error(`Task editorial_pipeline ${status}: ${error}`);
-    }
-
-    yield sse("heartbeat", { status, taskRunId: started.taskRunId });
+    const details = await poll(reviseStarted.taskRunId);
+    yield sse("heartbeat", {
+      rowId: "revise",
+      task: "revise_draft",
+      status: details.status,
+    });
+    if (!isDone(details.status)) continue;
+    const revised = (details.results?.[0] ?? { draft: "" }) as { draft: string };
+    yield sse("stage", {
+      rowId: "revise",
+      task: "revise_draft",
+      status: "complete",
+      taskRunId: reviseStarted.taskRunId,
+    });
+    yield sse("done", {
+      draft: revised.draft ?? "",
+      reviews,
+      durationMs: Date.now() - startedAt,
+      taskRunId: reviseStarted.taskRunId,
+    });
+    return;
   }
 }
