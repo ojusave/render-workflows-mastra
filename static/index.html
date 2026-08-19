@@ -109,10 +109,6 @@
     .t-label { font-size: 0.78rem; color: var(--text-strong); }
     .t-label .task { display: block; font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace; }
     .t-track { position: relative; height: 0.85rem; background: var(--track); overflow: visible; }
-    .t-now {
-      position: absolute; top: -3px; bottom: -3px; width: 1px; left: 0;
-      background: var(--render-purple); opacity: 0.7; z-index: 2; pointer-events: none;
-    }
     .t-bar {
       position: absolute; top: 0; bottom: 0; left: 0; width: 0;
       background: var(--bar, var(--render-purple)); min-width: 0;
@@ -418,8 +414,6 @@
     function paintRows() {
       const t0 = axisStart();
       const total = axisDomain();
-      const elapsed = Math.max(axisEndMs() - t0, 0);
-      const nowPct = Math.min(100, (elapsed / total) * 100);
       const root = document.getElementById("timeline-rows");
       if (root.dataset.built !== "1") {
         const reviewRows = ROWS.filter((r) => r.task === "review_draft");
@@ -429,7 +423,6 @@
           <div class="t-row ${row.cls}">
             <div class="t-label">${escapeHtml(row.title)}<span class="task" id="task-${cssId(row.id)}">${row.task}</span></div>
             <div class="t-track">
-              <div class="t-now" data-now></div>
               <div class="t-bar" id="bar-${cssId(row.id)}"></div>
             </div>
             <div class="t-state" id="st-${cssId(row.id)}">wait</div>
@@ -443,9 +436,6 @@
           rowHtml(editor);
         root.dataset.built = "1";
       }
-      document.querySelectorAll("[data-now]").forEach((el) => {
-        el.style.left = nowPct + "%";
-      });
       ROWS.forEach((row) => {
         const st = state[row.id] || { status: "pending" };
         const bar = document.getElementById("bar-" + cssId(row.id));
