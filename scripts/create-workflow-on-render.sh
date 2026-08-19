@@ -8,7 +8,7 @@ WORKFLOW_NAME="${WORKFLOW_NAME:-render-workflows-mastra-workflow}"
 RENDER_REGION="${RENDER_REGION:-oregon}"
 
 if ! command -v render >/dev/null 2>&1; then
-  echo "render CLI not found. Install from https://render.com/docs/cli (need 2.16+)."
+  echo "render CLI not found. Install from https://render.com/docs/cli?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra (need 2.16+)."
   exit 1
 fi
 

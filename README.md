@@ -30,9 +30,9 @@ This repo demonstrates how to split a Mastra agent pipeline across Render Workfl
 
 | Platform | Role |
 | --- | --- |
-| **[Render Workflows](https://render.com/docs/workflows)** | Queues each task on its own instance, with retries, timeouts, and parallel fan-out |
+| **[Render Workflows](https://render.com/docs/workflows?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)** | Queues each task on its own instance, with retries, timeouts, and parallel fan-out |
 | **[Mastra](https://mastra.ai)** | Reviewer and editor agents (`openai/gpt-5.6-sol` in the [Mastra Render guide](https://mastra.ai/integrations/deploy/render)) |
-| **[Render Web Services](https://render.com/docs/web-services)** | Express API plus a live UI that streams progress over SSE |
+| **[Render Web Services](https://render.com/docs/web-services?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)** | Express API plus a live UI that streams progress over SSE |
 
 ## Architecture
 
@@ -67,7 +67,7 @@ The live UI starts the same parent the [Mastra Render guide](https://mastra.ai/i
 
 1. Click **Deploy to Render** above
 2. You will be prompted for:
-   - `RENDER_API_KEY` — [create one here](https://render.com/docs/api#1-create-an-api-key)
+   - `RENDER_API_KEY` — [create one here](https://render.com/docs/api?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra#1-create-an-api-key)
 
 3. Create the Workflow service (Blueprints do not define Workflows yet):
    - Go to [Render Dashboard](https://dashboard.render.com) → **New** → **Workflow**
@@ -98,7 +98,7 @@ The Render CLI can create the same Workflow service:
 
 | Variable | Where | Description |
 | --- | --- | --- |
-| `RENDER_API_KEY` | Web service | [Render API key](https://render.com/docs/api#1-create-an-api-key) for dispatching tasks |
+| `RENDER_API_KEY` | Web service | [Render API key](https://render.com/docs/api?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra#1-create-an-api-key) for dispatching tasks |
 | `WORKFLOW_SLUG` | Web service | Must match the Workflow slug (`render-workflows-mastra-workflow` by default) |
 | `OPENAI_API_KEY` | Workflow service | Required by the agents on [the Mastra guide](https://mastra.ai/integrations/deploy/render) (`openai/gpt-5.6-sol`) |
 | `POLL_INTERVAL_MS` | Web service | How often Express polls the parent task (default 800) |
@@ -141,8 +141,8 @@ render.yaml                  Web service Blueprint
 ## Learn More
 
 **Render:**
-- [Render Workflows Documentation](https://render.com/docs/workflows)
-- [Defining tasks](https://render.com/docs/workflows-defining)
+- [Render Workflows Documentation](https://render.com/docs/workflows?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)
+- [Defining tasks](https://render.com/docs/workflows-defining?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)
 - [Render Developers Discord](https://discord.gg/gvC7ceS9YS)
 
 **Mastra:**

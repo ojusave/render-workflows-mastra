@@ -26,7 +26,7 @@ projects:
             envVars:
               - key: RENDER_API_KEY
                 displayName: Render API Key
-                description: "Required: Render API key for triggering workflow tasks. https://render.com/docs/api#1-create-an-api-key"
+                description: "Required: Render API key for triggering workflow tasks. https://render.com/docs/api?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra#1-create-an-api-key"
                 required: true
                 sensitive: true
                 sync: false
