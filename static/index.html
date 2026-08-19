@@ -111,8 +111,10 @@
     .t-track { position: relative; height: 0.85rem; background: var(--track); overflow: hidden; }
     .t-bar {
       position: absolute; top: 0; bottom: 0; right: 0; left: auto; width: 0;
-      background: var(--bar, var(--render-purple)); min-width: 2px;
+      background: var(--bar, var(--render-purple)); min-width: 0;
+      transition: width 0.2s linear, right 0.2s linear;
     }
+    .t-bar.running { min-width: 3px; }
     .t-bar.running {
       animation: stripe 0.8s linear infinite;
       background-size: 20px 20px;
@@ -308,6 +310,9 @@
       const end = parseTs(payload.completedAt);
       if (start != null) state[id].startedAt = start;
       if (end != null) state[id].endedAt = end;
+      if (payload.taskRunId) state[id].taskRunId = payload.taskRunId;
+      if (payload.startedAt) state[id].startedAtIso = payload.startedAt;
+      if (payload.completedAt) state[id].completedAtIso = payload.completedAt;
     }
     function axisStart() {
       const starts = ROWS.map((r) => state[r.id]?.startedAt).filter(Boolean);
@@ -322,6 +327,11 @@
         else if (st.status === "running") end = Math.max(end, Date.now());
       }
       return Math.max(end, axisStart() + 1);
+    }
+    /* Keep a stable scale so a running bar grows instead of staying 100% wide. */
+    const MIN_DOMAIN_MS = 45000;
+    function axisDomain() {
+      return Math.max(MIN_DOMAIN_MS, axisEndMs() - axisStart());
     }
 
     function escapeHtml(s) {
@@ -397,15 +407,14 @@
 
     function paintRows() {
       const t0 = axisStart();
-      const t1 = axisEndMs();
-      const total = Math.max(t1 - t0, 1);
+      const total = axisDomain();
       const axisEnd = document.getElementById("axis-end");
       if (axisEnd) axisEnd.textContent = fmt(total);
       const root = document.getElementById("timeline-rows");
       if (root.dataset.built !== "1") {
         root.innerHTML = ROWS.map((row) => `
           <div class="t-row ${row.cls}">
-            <div class="t-label">${escapeHtml(row.title)}<span class="task">${row.task}</span></div>
+            <div class="t-label">${escapeHtml(row.title)}<span class="task" id="task-${cssId(row.id)}">${row.task}</span></div>
             <div class="t-track"><div class="t-bar" id="bar-${cssId(row.id)}"></div></div>
             <div class="t-state" id="st-${cssId(row.id)}">wait</div>
           </div>`).join("");
@@ -415,8 +424,15 @@
         const st = state[row.id] || { status: "pending" };
         const bar = document.getElementById("bar-" + cssId(row.id));
         const label = document.getElementById("st-" + cssId(row.id));
+        const taskEl = document.getElementById("task-" + cssId(row.id));
         if (!bar || !label) return;
+        if (taskEl) {
+          taskEl.textContent = st.taskRunId
+            ? row.task + " · " + String(st.taskRunId).slice(-8)
+            : row.task;
+        }
         bar.className = "t-bar" + (st.status === "running" || st.status === "complete" || st.status === "error" ? " " + st.status : "");
+        bar.title = [st.taskRunId, st.startedAtIso, st.completedAtIso].filter(Boolean).join(" → ");
         if (!st.startedAt) {
           bar.style.left = "auto";
           bar.style.right = "0";
@@ -429,7 +445,7 @@
         const rawEnd = st.endedAt ?? (st.status === "running" ? Date.now() : st.startedAt);
         const end = Math.max(start, rawEnd - t0);
         const rightPct = (start / total) * 100;
-        const widthPct = Math.min(100 - rightPct, Math.max((end - start) / total, 0.015) * 100);
+        const widthPct = Math.min(100 - rightPct, Math.max(end - start, 0) / total * 100);
         bar.style.left = "auto";
         bar.style.right = rightPct + "%";
         bar.style.width = widthPct + "%";
@@ -490,6 +506,7 @@
       document.body.classList.remove("is-done");
       ROWS.forEach((row) => { state[row.id] = { status: "pending" }; });
       clientT0 = Date.now();
+      document.getElementById("timeline-rows").dataset.built = "";
       paintBoard(); paintRows(); paintCards(); paintRewrite("", "");
       liveEl.className = "live";
       clearInterval(clock);

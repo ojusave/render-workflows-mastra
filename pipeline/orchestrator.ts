@@ -8,7 +8,7 @@ import { REVIEW_FOCUSES, type Review } from "../shared/editorial.js";
 
 const WORKFLOW_SLUG =
   process.env.WORKFLOW_SLUG || "render-workflows-mastra-workflow";
-const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || "1500", 10);
+const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || "800", 10);
 
 const render = new Render();
 
