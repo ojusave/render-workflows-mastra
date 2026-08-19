@@ -1,5 +1,5 @@
 /**
- * Express API around the Mastra + Render Workflows editorial pipeline.
+ * Express API: start editorial_pipeline and stream child runs over SSE.
  */
 import cors from "cors";
 import express, { type Request, type Response } from "express";

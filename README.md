@@ -100,18 +100,14 @@ The Render CLI can create the same Workflow service:
 ## Project Structure
 
 ```
-src/index.ts                 Workflow service entry (registers tasks)
-src/mastra/
-  index.ts                   Mastra instance
-  agents/reviewer-agent.ts   Reviewer agent
-  agents/editor-agent.ts     Editor agent
-src/tasks/
-  review-task.ts             review_draft
-  revision-task.ts           revise_draft
-  editorial-task.ts          editorial_pipeline
-src/server.ts                Express API + SSE
-src/pipeline/orchestrator.ts Starts editorial_pipeline and polls child runs
-static/index.html            Live UI
+src/                         Same files as the Mastra Render guide
+  index.ts
+  mastra/
+  tasks/
+web/                         Live UI around those tasks
+  server.ts
+  pipeline/
+  static/index.html
 render.yaml                  Web service Blueprint
 ```
 

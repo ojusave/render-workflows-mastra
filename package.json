@@ -5,8 +5,9 @@
   "description": "Editorial pipeline powered by Mastra agents and Render Workflows",
   "type": "module",
   "scripts": {
-    "build": "tsc && rm -rf dist/static && cp -r static dist/static && mkdir -p dist/tasks && printf '%s\\n' \"import '../index.js'\" > dist/tasks/index.js",
+    "build": "tsc && tsc -p tsconfig.web.json && rm -rf dist/static && cp -r web/static dist/static && mkdir -p dist/tasks && printf '%s\\n' \"import '../index.js'\" > dist/tasks/index.js",
     "start": "node dist/server.js",
+    "start:web": "node dist/server.js",
     "start:workflows": "node dist/index.js",
     "start:tasks": "node dist/index.js",
     "dev:workflows": "tsx src/index.ts"

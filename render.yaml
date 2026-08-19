@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://render.com/schema/render.yaml.json
 #
-# Mastra editorial pipeline on Render Workflows.
+# Web service Blueprint.
 # Deploy: https://render.com/deploy?repo=https://github.com/ojusave/render-workflows-mastra
 #
 # The Workflow service (render-workflows-mastra-workflow) is created separately:

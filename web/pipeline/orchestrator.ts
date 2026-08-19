@@ -1,6 +1,5 @@
 /**
- * Starts editorial_pipeline (the page's parent task) and streams each
- * chained child run: three review_draft, then revise_draft.
+ * Starts editorial_pipeline and streams each chained child run.
  */
 import { Render } from "@renderinc/sdk";
 import type { TaskRunDetails } from "@renderinc/sdk/workflows";
