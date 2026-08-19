@@ -110,7 +110,7 @@
     .t-label .task { display: block; font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace; }
     .t-track { position: relative; height: 0.85rem; background: var(--track); overflow: hidden; }
     .t-bar {
-      position: absolute; top: 0; bottom: 0; left: 0; width: 0;
+      position: absolute; top: 0; bottom: 0; right: 0; left: auto; width: 0;
       background: var(--bar, var(--render-purple)); min-width: 2px;
     }
     .t-bar.running {
@@ -177,7 +177,7 @@
     }
     footer a { color: var(--text-muted); }
     footer .sep { color: var(--sep); }
-    @keyframes stripe { from { background-position: 0 0; } to { background-position: 20px 0; } }
+    @keyframes stripe { from { background-position: 0 0; } to { background-position: -20px 0; } }
     @keyframes pulse { 0%, 100% { opacity: 0.35; width: 36%; } 50% { opacity: 1; width: 70%; } }
     @media (max-width: 760px) {
       .cards, .board, .t-row, .t-axis { grid-template-columns: 1fr; }
@@ -234,7 +234,7 @@
       <div class="timeline">
         <div class="t-axis">
           <span></span>
-          <div class="t-axis-track"><span>0s</span><span id="axis-end">0s</span></div>
+          <div class="t-axis-track"><span id="axis-end">0s</span><span>0s</span></div>
           <span></span>
         </div>
         <div id="timeline-rows"></div>
@@ -418,7 +418,8 @@
         if (!bar || !label) return;
         bar.className = "t-bar" + (st.status === "running" || st.status === "complete" || st.status === "error" ? " " + st.status : "");
         if (!st.startedAt) {
-          bar.style.left = "0";
+          bar.style.left = "auto";
+          bar.style.right = "0";
           bar.style.width = "0";
           label.textContent = "wait";
           label.className = "t-state pending";
@@ -427,9 +428,10 @@
         const start = Math.max(0, st.startedAt - t0);
         const rawEnd = st.endedAt ?? (st.status === "running" ? Date.now() : st.startedAt);
         const end = Math.max(start, rawEnd - t0);
-        const leftPct = (start / total) * 100;
-        const widthPct = Math.min(100 - leftPct, Math.max((end - start) / total, 0.015) * 100);
-        bar.style.left = leftPct + "%";
+        const rightPct = (start / total) * 100;
+        const widthPct = Math.min(100 - rightPct, Math.max((end - start) / total, 0.015) * 100);
+        bar.style.left = "auto";
+        bar.style.right = rightPct + "%";
         bar.style.width = widthPct + "%";
         const elapsed = fmt(end - start);
         label.textContent = st.status === "complete" ? elapsed : st.status === "running" ? elapsed : st.status === "error" ? "failed" : "wait";
