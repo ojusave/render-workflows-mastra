@@ -3,7 +3,7 @@
 # Prerequisites: render login, repo already pushed to GitHub.
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/ojusave/render-workflows-mastra}"
+REPO_URL="${REPO_URL:-https://github.com/render-examples/render-workflows-mastra}"
 WORKFLOW_NAME="${WORKFLOW_NAME:-render-workflows-mastra-workflow}"
 RENDER_REGION="${RENDER_REGION:-oregon}"
 

@@ -5,7 +5,7 @@
 A distributed editorial pipeline combining **Render Workflows** for orchestration and **Mastra** agents for review and revision. The UI starts `editorial_pipeline`. That parent fans out three `review_draft` runs, then `revise_draft`.
 
 <p>
-  <a href="https://render.com/deploy?repo=https://github.com/ojusave/render-workflows-mastra">
+  <a href="https://render.com/deploy?repo=https://github.com/render-examples/render-workflows-mastra">
     <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" />
   </a>
 </p>

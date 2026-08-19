@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://render.com/schema/render.yaml.json
 #
 # Web service Blueprint.
-# Deploy: https://render.com/deploy?repo=https://github.com/ojusave/render-workflows-mastra
+# Deploy: https://render.com/deploy?repo=https://github.com/render-examples/render-workflows-mastra
 #
 # The Workflow service (render-workflows-mastra-workflow) is created separately:
 # Dashboard → New → Workflow, or scripts/create-workflow-on-render.sh
