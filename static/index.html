@@ -95,24 +95,39 @@
       color: var(--render-purple); letter-spacing: 0.04em;
     }
     .live.done { color: var(--green); }
-    .timeline { border: 1px solid var(--border); background: var(--surface); padding: 0.75rem 1rem 0.4rem; margin-bottom: 0.85rem; }
+    .timeline { border: 1px solid var(--border); background: var(--surface); padding: 0.75rem 1rem 0.65rem; margin-bottom: 0.85rem; }
+    .t-caption { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 0.7rem; }
     .t-axis {
       display: grid; grid-template-columns: 10.5rem 1fr 4.5rem; gap: 0.75rem;
       font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace;
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.1rem;
     }
-    .t-axis-track { display: flex; justify-content: space-between; }
+    .t-axis-track { position: relative; height: 1rem; }
+    .t-axis-track .t-start { position: absolute; left: 0; }
+    .t-axis-track .t-now-label {
+      position: absolute; top: 0; transform: translateX(-50%);
+      color: var(--render-purple); font-weight: 600;
+    }
+    .t-phase {
+      font-size: 0.62rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--text-dim); padding: 0.55rem 0 0.2rem;
+    }
+    .t-phase:first-child { padding-top: 0.15rem; }
     .t-row {
       display: grid; grid-template-columns: 10.5rem 1fr 4.5rem; gap: 0.75rem;
       align-items: center; min-height: 2.4rem; border-top: 1px solid var(--border);
     }
     .t-label { font-size: 0.78rem; color: var(--text-strong); }
     .t-label .task { display: block; font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace; }
-    .t-track { position: relative; height: 0.85rem; background: var(--track); overflow: hidden; }
+    .t-track { position: relative; height: 0.85rem; background: var(--track); overflow: visible; }
+    .t-now {
+      position: absolute; top: -3px; bottom: -3px; width: 1px; left: 0;
+      background: var(--render-purple); opacity: 0.7; z-index: 2; pointer-events: none;
+    }
     .t-bar {
-      position: absolute; top: 0; bottom: 0; right: 0; left: auto; width: 0;
+      position: absolute; top: 0; bottom: 0; left: 0; width: 0;
       background: var(--bar, var(--render-purple)); min-width: 0;
-      transition: width 0.2s linear, right 0.2s linear;
+      transition: width 0.2s linear, left 0.2s linear;
     }
     .t-bar.running { min-width: 3px; }
     .t-bar.running {
@@ -179,7 +194,7 @@
     }
     footer a { color: var(--text-muted); }
     footer .sep { color: var(--sep); }
-    @keyframes stripe { from { background-position: 0 0; } to { background-position: -20px 0; } }
+    @keyframes stripe { from { background-position: 0 0; } to { background-position: 20px 0; } }
     @keyframes pulse { 0%, 100% { opacity: 0.35; width: 36%; } 50% { opacity: 1; width: 70%; } }
     @media (max-width: 760px) {
       .cards, .board, .t-row, .t-axis { grid-template-columns: 1fr; }
@@ -234,9 +249,13 @@
         <div class="live" id="live">LIVE · 0.0s</div>
       </div>
       <div class="timeline">
+        <p class="t-caption" id="t-caption">Three reviewers start together. The editor starts only after the last review finishes.</p>
         <div class="t-axis">
           <span></span>
-          <div class="t-axis-track"><span id="axis-end">0s</span><span>0s</span></div>
+          <div class="t-axis-track">
+            <span class="t-start">start</span>
+            <span class="t-now-label" id="axis-now">now</span>
+          </div>
           <span></span>
         </div>
         <div id="timeline-rows"></div>
@@ -397,29 +416,56 @@
           ? "Editor rewriting"
           : done === 3
             ? "Reviews in. Starting editor"
-            : "Reviews in flight";
+            : "Three reviews in parallel";
       document.getElementById("board-sub").textContent = finished
-        ? "Three task runs merged into one draft"
+        ? "revise_draft used all three review_draft results"
         : revising
-          ? "revise_draft has the three verdicts"
-          : (3 - done) + " still running · editor is blocked";
+          ? "The three reviews are done. This is the rewrite."
+          : (3 - done) + " still running. The editor has not started.";
+      const cap = document.getElementById("t-caption");
+      if (cap) {
+        cap.textContent = finished
+          ? "Read left to right: the three reviews overlapped, then the editor ran."
+          : revising
+            ? "The purple bar starts after the reviews. That is the rewrite."
+            : "Color growing right is elapsed time on that task run. Empty track to the right of the now line is still ahead.";
+      }
     }
 
     function paintRows() {
       const t0 = axisStart();
       const total = axisDomain();
-      const axisEnd = document.getElementById("axis-end");
-      if (axisEnd) axisEnd.textContent = fmt(total);
+      const elapsed = Math.max(axisEndMs() - t0, 0);
+      const nowPct = Math.min(100, (elapsed / total) * 100);
+      const nowLabel = document.getElementById("axis-now");
+      if (nowLabel) {
+        nowLabel.style.left = nowPct + "%";
+        nowLabel.style.transform = nowPct < 10 ? "none" : nowPct > 88 ? "translateX(-100%)" : "translateX(-50%)";
+        nowLabel.textContent = document.body.classList.contains("is-done") ? "done" : "now " + fmt(elapsed);
+      }
       const root = document.getElementById("timeline-rows");
       if (root.dataset.built !== "1") {
-        root.innerHTML = ROWS.map((row) => `
+        const reviewRows = ROWS.filter((r) => r.id !== "revise");
+        const editor = ROWS.find((r) => r.id === "revise");
+        const rowHtml = (row) => `
           <div class="t-row ${row.cls}">
             <div class="t-label">${escapeHtml(row.title)}<span class="task" id="task-${cssId(row.id)}">${row.task}</span></div>
-            <div class="t-track"><div class="t-bar" id="bar-${cssId(row.id)}"></div></div>
+            <div class="t-track">
+              <div class="t-now" data-now></div>
+              <div class="t-bar" id="bar-${cssId(row.id)}"></div>
+            </div>
             <div class="t-state" id="st-${cssId(row.id)}">wait</div>
-          </div>`).join("");
+          </div>`;
+        root.innerHTML =
+          `<div class="t-phase">In parallel</div>` +
+          reviewRows.map(rowHtml).join("") +
+          `<div class="t-phase">Then rewrite</div>` +
+          rowHtml(editor);
         root.dataset.built = "1";
       }
+      document.querySelectorAll("[data-now]").forEach((el) => {
+        el.style.left = nowPct + "%";
+      });
       ROWS.forEach((row) => {
         const st = state[row.id] || { status: "pending" };
         const bar = document.getElementById("bar-" + cssId(row.id));
@@ -434,23 +480,23 @@
         bar.className = "t-bar" + (st.status === "running" || st.status === "complete" || st.status === "error" ? " " + st.status : "");
         bar.title = [st.taskRunId, st.startedAtIso, st.completedAtIso].filter(Boolean).join(" → ");
         if (!st.startedAt) {
-          bar.style.left = "auto";
-          bar.style.right = "0";
+          bar.style.right = "auto";
+          bar.style.left = "0";
           bar.style.width = "0";
-          label.textContent = "wait";
+          label.textContent = row.id === "revise" ? "blocked" : "wait";
           label.className = "t-state pending";
           return;
         }
         const start = Math.max(0, st.startedAt - t0);
         const rawEnd = st.endedAt ?? (st.status === "running" ? Date.now() : st.startedAt);
         const end = Math.max(start, rawEnd - t0);
-        const rightPct = (start / total) * 100;
-        const widthPct = Math.min(100 - rightPct, Math.max(end - start, 0) / total * 100);
-        bar.style.left = "auto";
-        bar.style.right = rightPct + "%";
+        const leftPct = (start / total) * 100;
+        const widthPct = Math.min(100 - leftPct, Math.max(end - start, 0) / total * 100);
+        bar.style.right = "auto";
+        bar.style.left = leftPct + "%";
         bar.style.width = widthPct + "%";
-        const elapsed = fmt(end - start);
-        label.textContent = st.status === "complete" ? elapsed : st.status === "running" ? elapsed : st.status === "error" ? "failed" : "wait";
+        const took = fmt(end - start);
+        label.textContent = st.status === "complete" ? took : st.status === "running" ? took : st.status === "error" ? "failed" : "wait";
         label.className = "t-state " + st.status;
       });
     }
