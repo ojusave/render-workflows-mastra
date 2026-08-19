@@ -97,17 +97,6 @@
     .live.done { color: var(--green); }
     .timeline { border: 1px solid var(--border); background: var(--surface); padding: 0.75rem 1rem 0.65rem; margin-bottom: 0.85rem; }
     .t-caption { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 0.7rem; }
-    .t-axis {
-      display: grid; grid-template-columns: 10.5rem 1fr 4.5rem; gap: 0.75rem;
-      font-size: 0.62rem; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace;
-      margin-bottom: 0.1rem;
-    }
-    .t-axis-track { position: relative; height: 1rem; }
-    .t-axis-track .t-start { position: absolute; left: 0; }
-    .t-axis-track .t-now-label {
-      position: absolute; top: 0; transform: translateX(-50%);
-      color: var(--render-purple); font-weight: 600;
-    }
     .t-phase {
       font-size: 0.62rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
       color: var(--text-dim); padding: 0.55rem 0 0.2rem;
@@ -198,7 +187,7 @@
     @keyframes stripe { from { background-position: 0 0; } to { background-position: 20px 0; } }
     @keyframes pulse { 0%, 100% { opacity: 0.35; width: 36%; } 50% { opacity: 1; width: 70%; } }
     @media (max-width: 760px) {
-      .cards, .board, .t-row, .t-axis { grid-template-columns: 1fr; }
+      .cards, .board, .t-row { grid-template-columns: 1fr; }
       .signup-full { display: none; } .signup-short { display: inline; }
       header .tag { display: none; }
     }
@@ -251,14 +240,6 @@
       </div>
       <div class="timeline">
         <p class="t-caption" id="t-caption">Three reviewers start together. The editor starts only after the last review finishes.</p>
-        <div class="t-axis">
-          <span></span>
-          <div class="t-axis-track">
-            <span class="t-start">start</span>
-            <span class="t-now-label" id="axis-now">now</span>
-          </div>
-          <span></span>
-        </div>
         <div id="timeline-rows"></div>
       </div>
       <div class="cards" id="review-cards"></div>
@@ -439,12 +420,6 @@
       const total = axisDomain();
       const elapsed = Math.max(axisEndMs() - t0, 0);
       const nowPct = Math.min(100, (elapsed / total) * 100);
-      const nowLabel = document.getElementById("axis-now");
-      if (nowLabel) {
-        nowLabel.style.left = nowPct + "%";
-        nowLabel.style.transform = nowPct < 10 ? "none" : nowPct > 88 ? "translateX(-100%)" : "translateX(-50%)";
-        nowLabel.textContent = document.body.classList.contains("is-done") ? "done" : "now " + fmt(elapsed);
-      }
       const root = document.getElementById("timeline-rows");
       if (root.dataset.built !== "1") {
         const reviewRows = ROWS.filter((r) => r.task === "review_draft");
