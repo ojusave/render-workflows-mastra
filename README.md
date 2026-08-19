@@ -5,19 +5,13 @@
 A distributed editorial pipeline combining **Render Workflows** for orchestration and **Mastra** agents for review and revision. The UI starts `editorial_pipeline`. That parent fans out three `review_draft` runs, then `revise_draft`.
 
 <p>
-  <a href="https://render.com/deploy?repo=https://github.com/render-examples/render-workflows-mastra">
-    <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" />
-  </a>
-</p>
-
-<p>
-  <a href="https://render.com">
+  <a href="https://render.com" target="_blank" rel="noopener noreferrer">
     <img src="https://img.shields.io/badge/Render-Workflows-6c63ff?logo=render&logoColor=white" alt="Render Workflows" />
   </a>
-  <a href="https://mastra.ai">
+  <a href="https://mastra.ai" target="_blank" rel="noopener noreferrer">
     <img src="https://img.shields.io/badge/Mastra-Agents-ff6b6b?logoColor=white" alt="Mastra" />
   </a>
-  <a href="https://discord.gg/gvC7ceS9YS">
+  <a href="https://discord.gg/gvC7ceS9YS" target="_blank" rel="noopener noreferrer">
     <img src="https://img.shields.io/badge/Discord-Render%20Developers-5865F2?logo=discord&logoColor=white" alt="Discord" />
   </a>
 </p>
@@ -30,9 +24,9 @@ This repo demonstrates how to split a Mastra agent pipeline across Render Workfl
 
 | Platform | Role |
 | --- | --- |
-| **[Render Workflows](https://render.com/docs/workflows?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)** | Queues each task on its own instance, with retries, timeouts, and parallel fan-out |
-| **[Mastra](https://mastra.ai)** | Reviewer and editor agents (`openai/gpt-5.6-sol` in the [Mastra Render guide](https://mastra.ai/integrations/deploy/render)) |
-| **[Render Web Services](https://render.com/docs/web-services?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)** | Express API plus a live UI that streams progress over SSE |
+| **<a href="https://render.com/docs/workflows?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra" target="_blank" rel="noopener noreferrer">Render Workflows</a>** | Queues each task on its own instance, with retries, timeouts, and parallel fan-out |
+| **<a href="https://mastra.ai" target="_blank" rel="noopener noreferrer">Mastra</a>** | Reviewer and editor agents (`openai/gpt-5.6-sol` in the <a href="https://mastra.ai/integrations/deploy/render" target="_blank" rel="noopener noreferrer">Mastra Render guide</a>) |
+| **<a href="https://render.com/docs/web-services?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra" target="_blank" rel="noopener noreferrer">Render Web Services</a>** | Express API plus a live UI that streams progress over SSE |
 
 ## How It Works
 
@@ -46,7 +40,7 @@ This repo demonstrates how to split a Mastra agent pipeline across Render Workfl
 | `review_draft` | Reviewer | One task run per focus: technical clarity, structure and flow, reader usefulness |
 | `revise_draft` | Editor | Rewrites the draft from the combined reviews |
 
-The live UI starts the same parent the [Mastra Render guide](https://mastra.ai/integrations/deploy/render) starts. Bars and cards are those child task runs.
+The live UI starts the same parent the <a href="https://mastra.ai/integrations/deploy/render" target="_blank" rel="noopener noreferrer">Mastra Render guide</a> starts. Bars and cards are those child task runs.
 
 4. Open the live page, click **Run pipeline**, and watch the timeline before the rewrite appears.
 
@@ -54,24 +48,27 @@ The live UI starts the same parent the [Mastra Render guide](https://mastra.ai/i
 
 ### Prerequisites
 
-- [Render account](https://dashboard.render.com/register?utm_source=github&utm_medium=referral&utm_campaign=ojus_demos&utm_content=readme_link)
-- An API key from a [Mastra model provider](https://mastra.ai/models) (OpenAI, Anthropic, Google, and others)
+- <a href="https://dashboard.render.com/register?utm_source=github&utm_medium=referral&utm_campaign=ojus_demos&utm_content=readme_link" target="_blank" rel="noopener noreferrer">Render account</a>
+- An API key from a <a href="https://mastra.ai/models" target="_blank" rel="noopener noreferrer">Mastra model provider</a> (OpenAI, Anthropic, Google, and others)
 
 ### Deploy
 
-1. Click **Deploy to Render** above
-2. You will be prompted for:
-   - `RENDER_API_KEY` — [create one here](https://render.com/docs/api?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra#1-create-an-api-key)
+Blueprints cannot create Workflow services yet, so this demo is set up in the dashboard.
 
-3. Create the Workflow service (Blueprints do not define Workflows yet):
-   - Go to [Render Dashboard](https://dashboard.render.com) → **New** → **Workflow**
+1. Create the Workflow service:
+   - Go to <a href="https://dashboard.render.com" target="_blank" rel="noopener noreferrer">Render Dashboard</a> → **New** → **Workflow**
    - Connect this repository
    - Build command: `npm install && npm run build`
    - Start command: `npm run start:workflows`
    - Name: `render-workflows-mastra-workflow`
    - Add env var: `OPENAI_API_KEY`
 
-4. Open the web service URL, load the sample draft, and click **Run pipeline**
+2. Create the web service from `render.yaml`, or **New** → **Web Service** on the same repo:
+   - Build command: `npm install && npm run build`
+   - Start command: `npm start`
+   - Add env vars: `RENDER_API_KEY` (<a href="https://render.com/docs/api?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra#1-create-an-api-key" target="_blank" rel="noopener noreferrer">create one</a>) and `WORKFLOW_SLUG=render-workflows-mastra-workflow`
+
+3. Open the web service URL, load the sample draft, and click **Run pipeline**
 
 The Render CLI can create the same Workflow service:
 
@@ -92,9 +89,9 @@ The Render CLI can create the same Workflow service:
 
 | Variable | Where | Description |
 | --- | --- | --- |
-| `RENDER_API_KEY` | Web service | [Render API key](https://render.com/docs/api?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra#1-create-an-api-key) for dispatching tasks |
+| `RENDER_API_KEY` | Web service | <a href="https://render.com/docs/api?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra#1-create-an-api-key" target="_blank" rel="noopener noreferrer">Render API key</a> for dispatching tasks |
 | `WORKFLOW_SLUG` | Web service | Must match the Workflow slug (`render-workflows-mastra-workflow` by default) |
-| `OPENAI_API_KEY` | Workflow service | Required by the agents on [the Mastra guide](https://mastra.ai/integrations/deploy/render) (`openai/gpt-5.6-sol`) |
+| `OPENAI_API_KEY` | Workflow service | Required by the agents on <a href="https://mastra.ai/integrations/deploy/render" target="_blank" rel="noopener noreferrer">the Mastra guide</a> (`openai/gpt-5.6-sol`) |
 | `POLL_INTERVAL_MS` | Web service | How often Express polls the parent task (default 800) |
 
 ## Project Structure
@@ -125,20 +122,20 @@ render.yaml                  Web service Blueprint
 | --- | --- |
 | Tasks fail immediately | Set `OPENAI_API_KEY` on the **workflow** service, not only the web service |
 | `startTask` returns but nothing runs | `WORKFLOW_SLUG` must match the Workflow slug in Dashboard → Workflow → General |
-| Empty model output | The task throws and retries; check the model name against [Mastra's router](https://mastra.ai/models) |
+| Empty model output | The task throws and retries; check the model name against <a href="https://mastra.ai/models" target="_blank" rel="noopener noreferrer">Mastra's router</a> |
 | Web service cannot dispatch | Set `RENDER_API_KEY` on the web service |
 
 ## Learn More
 
 **Render:**
-- [Render Workflows Documentation](https://render.com/docs/workflows?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)
-- [Defining tasks](https://render.com/docs/workflows-defining?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)
-- [Render Developers Discord](https://discord.gg/gvC7ceS9YS)
+- <a href="https://render.com/docs/workflows?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra" target="_blank" rel="noopener noreferrer">Render Workflows Documentation</a>
+- <a href="https://render.com/docs/workflows-defining?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra" target="_blank" rel="noopener noreferrer">Defining tasks</a>
+- <a href="https://discord.gg/gvC7ceS9YS" target="_blank" rel="noopener noreferrer">Render Developers Discord</a>
 
 **Mastra:**
-- [Mastra on Render](https://mastra.ai/integrations/deploy/render)
-- [Mastra agents](https://mastra.ai/docs/agents/overview)
-- [Model router](https://mastra.ai/models)
+- <a href="https://mastra.ai/integrations/deploy/render" target="_blank" rel="noopener noreferrer">Mastra on Render</a>
+- <a href="https://mastra.ai/docs/agents/overview" target="_blank" rel="noopener noreferrer">Mastra agents</a>
+- <a href="https://mastra.ai/models" target="_blank" rel="noopener noreferrer">Model router</a>
 
 ## License
 
