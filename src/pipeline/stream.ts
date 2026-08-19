@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import { runEditorialPipeline } from "./pipeline/orchestrator.js";
+import { runEditorialPipeline } from "./orchestrator.js";
 
 function sseHeaders(res: Response): void {
   res.writeHead(200, {
@@ -12,7 +12,7 @@ function sseHeaders(res: Response): void {
   res.write(":ok\n\n");
 }
 
-/** Stream editorial pipeline progress to the browser. */
+/** Stream editorial_pipeline child runs to the browser. */
 export async function streamEditorialPipeline(
   res: Response,
   draft: string

@@ -1,12 +1,11 @@
 /**
- * Express API for the Mastra editorial pipeline.
- * SSE uses native res.write() so events flush immediately.
+ * Express API around the Mastra + Render Workflows editorial pipeline.
  */
 import cors from "cors";
 import express, { type Request, type Response } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { streamEditorialPipeline } from "./pipeline-stream.js";
+import { streamEditorialPipeline } from "./pipeline/stream.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || "3000", 10);
@@ -32,9 +31,7 @@ app.post("/review", (req: Request, res: Response) => {
   void streamEditorialPipeline(res, draft);
 });
 
-app.use(
-  express.static(path.join(__dirname, "static"), { maxAge: 0, etag: false })
-);
+app.use(express.static(path.join(__dirname, "static"), { maxAge: 0, etag: false }));
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Listening on 0.0.0.0:${PORT}`);

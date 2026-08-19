@@ -143,6 +143,7 @@
     .row-structure { --bar: var(--amber); }
     .row-useful { --bar: var(--green); }
     .row-revise { --bar: var(--render-purple); }
+    .row-pipeline { --bar: #c4b5fd; }
     .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; margin-bottom: 0.85rem; }
     .card {
       background: var(--surface); border: 1px solid var(--border); padding: 0.85rem 0.9rem;
@@ -164,7 +165,7 @@
       font-family: ui-monospace, Menlo, monospace; font-size: 0.85em;
       background: var(--overlay-medium); padding: 0.05em 0.3em;
     }
-    .notes { list-style: disc; padding-left: 1.1rem; font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; }
+    .card .md { max-height: 9rem; overflow: auto; font-size: 0.78rem; line-height: 1.45; }
     .md ul { list-style: disc; padding-left: 1.25rem; margin: 0 0 0.65rem; }
     .md ol { list-style: decimal; padding-left: 1.25rem; margin: 0 0 0.65rem; }
     .rewrite .body.md ul, .rewrite .body.md ol { font-size: inherit; color: inherit; line-height: 1.7; }
@@ -227,8 +228,8 @@
   <main>
     <div id="compose">
       <div class="hero">
-        <h2>Three reviewer tasks. Then one rewrite.</h2>
-        <p>Watch the count go 0 → 3. The editor cannot start until every review_draft run has finished.</p>
+        <h2>One parent task. Three reviews. Then a rewrite.</h2>
+        <p>The UI starts <code>editorial_pipeline</code>. Watch three <code>review_draft</code> runs overlap, then <code>revise_draft</code>.</p>
       </div>
       <label for="draft">Draft</label>
       <textarea id="draft"></textarea>
@@ -280,6 +281,7 @@
   <script>
     const SAMPLE = "Render workflows let you run stuff in the background. Its pretty useful when you have agents that take a long time. You can also run things in parallel which is good. This draft should be more specific about how task runs work, why retries matter, and who should use a parent task versus calling each stage from the web service.";
     const ROWS = [
+      { id: "editorial_pipeline", title: "Pipeline", task: "editorial_pipeline", cls: "row-pipeline" },
       { id: "technical clarity", title: "Clarity", task: "review_draft", cls: "row-clarity" },
       { id: "structure and flow", title: "Structure", task: "review_draft", cls: "row-structure" },
       { id: "reader usefulness", title: "Usefulness", task: "review_draft", cls: "row-useful" },
@@ -402,7 +404,7 @@
     }
     function cssId(id) { return id.replace(/[^a-z0-9]+/gi, "-"); }
     function reviewDone() {
-      return ROWS.filter((r) => r.id !== "revise").filter((r) => state[r.id]?.status === "complete").length;
+      return ROWS.filter((r) => r.task === "review_draft").filter((r) => state[r.id]?.status === "complete").length;
     }
 
     function paintBoard() {
@@ -445,8 +447,9 @@
       }
       const root = document.getElementById("timeline-rows");
       if (root.dataset.built !== "1") {
-        const reviewRows = ROWS.filter((r) => r.id !== "revise");
+        const reviewRows = ROWS.filter((r) => r.task === "review_draft");
         const editor = ROWS.find((r) => r.id === "revise");
+        const parent = ROWS.find((r) => r.id === "editorial_pipeline");
         const rowHtml = (row) => `
           <div class="t-row ${row.cls}">
             <div class="t-label">${escapeHtml(row.title)}<span class="task" id="task-${cssId(row.id)}">${row.task}</span></div>
@@ -457,6 +460,8 @@
             <div class="t-state" id="st-${cssId(row.id)}">wait</div>
           </div>`;
         root.innerHTML =
+          `<div class="t-phase">Parent</div>` +
+          rowHtml(parent) +
           `<div class="t-phase">In parallel</div>` +
           reviewRows.map(rowHtml).join("") +
           `<div class="t-phase">Then rewrite</div>` +
@@ -483,7 +488,7 @@
           bar.style.right = "auto";
           bar.style.left = "0";
           bar.style.width = "0";
-          label.textContent = row.id === "revise" ? "blocked" : "wait";
+          label.textContent = row.id === "revise" ? "blocked" : row.id === "editorial_pipeline" ? "starting" : "wait";
           label.className = "t-state pending";
           return;
         }
@@ -502,12 +507,11 @@
     }
 
     function paintCards() {
-      document.getElementById("review-cards").innerHTML = ROWS.filter((r) => r.id !== "revise").map((row) => {
+      document.getElementById("review-cards").innerHTML = ROWS.filter((r) => r.task === "review_draft").map((row) => {
         const st = state[row.id] || { status: "pending" };
         let body = `<div class="pulse"></div><div class="pulse"></div>`;
         if (st.status === "complete") {
-          const notes = (st.notes || []).map((n) => `<li>${inlineMd(n)}</li>`).join("");
-          body = `<p class="verdict">${inlineMd(st.verdict || "Review in.")}</p>${notes ? `<ul class="notes">${notes}</ul>` : ""}`;
+          body = `<div class="md">${mdToHtml(st.feedback || st.verdict || "")}</div>`;
         } else if (st.status === "running") {
           body = `<p class="verdict">Running on its own task instance…</p><div class="pulse"></div>`;
         } else {
@@ -540,8 +544,7 @@
       if (!review || !review.focus) return;
       if (!state[review.focus]) state[review.focus] = { status: "complete" };
       state[review.focus].status = "complete";
-      state[review.focus].verdict = review.verdict || "";
-      state[review.focus].notes = review.notes || [];
+      state[review.focus].feedback = review.feedback || review.verdict || "";
     }
 
     runBtn.onclick = async () => {
@@ -612,8 +615,8 @@
         }
         if (apiStatus === "complete" || apiStatus === "completed" || apiStatus === "succeeded") {
           state[id].status = "complete";
-          if (payload.review) applyReview(payload.review);
         }
+        if (payload.review) applyReview(payload.review);
         if (apiStatus === "error" || apiStatus === "failed" || apiStatus === "canceled") {
           state[id].status = "error";
         }

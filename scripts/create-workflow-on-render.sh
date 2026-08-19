@@ -22,11 +22,11 @@ render workflows create \
   --branch main \
   --runtime node \
   --build-command "npm install && npm run build" \
-  --run-command "node dist/tasks/index.js" \
+  --run-command "npm run start:workflows" \
   --region "$RENDER_REGION" \
   --confirm \
   -o json
 
 echo ""
-echo "Set MASTRA_MODEL and the matching provider API key on the workflow service."
+echo "Set OPENAI_API_KEY on the workflow service (agents use openai/gpt-5.6-sol)."
 echo "Set WORKFLOW_SLUG on the web service to this workflow's slug."

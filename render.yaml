@@ -5,7 +5,7 @@
 #
 # The Workflow service (render-workflows-mastra-workflow) is created separately:
 # Dashboard → New → Workflow, or scripts/create-workflow-on-render.sh
-# Start command: node dist/tasks/index.js
+# Start command: npm run start:workflows
 
 previews:
   generation: off
@@ -21,7 +21,7 @@ projects:
             region: oregon
             plan: starter
             buildCommand: npm install && npm run build
-            startCommand: node dist/main.js
+            startCommand: node dist/server.js
             healthCheckPath: /health
             envVars:
               - key: RENDER_API_KEY
