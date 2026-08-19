@@ -12,6 +12,16 @@ const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || "1500", 10);
 
 const render = new Render();
 
+type TaskSnapshot = {
+  id: string;
+  status: string;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+  results?: unknown[];
+  attempts?: Array<{ startedAt?: string; completedAt?: string }>;
+};
+
 function sse(event: string, data: Record<string, unknown>): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
@@ -24,7 +34,33 @@ function isFailed(status: string): boolean {
   return status === "failed" || status === "canceled";
 }
 
-async function poll(taskRunId: string) {
+/** startedAt / completedAt from the Workflows task run, not the web clock. */
+function workflowTimes(details: TaskSnapshot) {
+  const first = details.attempts?.[0];
+  const last = details.attempts?.[details.attempts.length - 1];
+  return {
+    startedAt: details.startedAt ?? first?.startedAt ?? null,
+    completedAt: details.completedAt ?? last?.completedAt ?? null,
+  };
+}
+
+function rowPayload(
+  rowId: string,
+  task: string,
+  details: TaskSnapshot,
+  extra: Record<string, unknown> = {}
+) {
+  return {
+    rowId,
+    task,
+    taskRunId: details.id,
+    status: details.status,
+    ...workflowTimes(details),
+    ...extra,
+  };
+}
+
+async function poll(taskRunId: string): Promise<TaskSnapshot> {
   const details = await render.workflows.getTaskRun(taskRunId);
   if (isFailed(details.status)) {
     throw new Error(
@@ -34,53 +70,35 @@ async function poll(taskRunId: string) {
   return details;
 }
 
-function timing(
-  details: { startedAt?: string; completedAt?: string },
-  fallbackStart: number
-) {
-  const at = Date.now();
-  let durationMs = Math.max(0, at - fallbackStart);
-  if (details.startedAt && details.completedAt) {
-    const parsed =
-      Date.parse(details.completedAt) - Date.parse(details.startedAt);
-    if (Number.isFinite(parsed) && parsed >= 0) durationMs = parsed;
-  }
-  return {
-    at,
-    startedAt: details.startedAt,
-    completedAt: details.completedAt,
-    durationMs,
-  };
-}
-
 export async function* runEditorialPipeline(
   draft: string
 ): AsyncGenerator<string> {
-  const startedAt = Date.now();
-  yield sse("plan", {
-    focuses: [...REVIEW_FOCUSES],
-    startedAt,
-  });
+  yield sse("plan", { focuses: [...REVIEW_FOCUSES] });
 
-  const reviewRuns: Array<{
-    focus: string;
-    taskRunId: string;
-    startedMs: number;
-  }> = [];
-  for (const focus of REVIEW_FOCUSES) {
-    const started = await render.workflows.startTask(
-      `${WORKFLOW_SLUG}/review_draft`,
-      [draft, focus]
-    );
-    const startedMs = Date.now();
-    reviewRuns.push({ focus, taskRunId: started.taskRunId, startedMs });
+  const reviewRuns = await Promise.all(
+    REVIEW_FOCUSES.map(async (focus) => {
+      const started = await render.workflows.startTask(
+        `${WORKFLOW_SLUG}/review_draft`,
+        [draft, focus]
+      );
+      return { focus, taskRunId: started.taskRunId };
+    })
+  );
+
+  for (const run of reviewRuns) {
     yield sse("stage", {
-      rowId: focus,
+      rowId: run.focus,
       task: "review_draft",
       status: "running",
-      taskRunId: started.taskRunId,
-      at: startedMs,
+      taskRunId: run.taskRunId,
     });
+  }
+
+  const firstLooks = await Promise.all(
+    reviewRuns.map((run) => poll(run.taskRunId))
+  );
+  for (let i = 0; i < reviewRuns.length; i++) {
+    yield sse("heartbeat", rowPayload(reviewRuns[i].focus, "review_draft", firstLooks[i]));
   }
 
   yield sse("status", {
@@ -94,33 +112,37 @@ export async function* runEditorialPipeline(
 
   while (pending.size > 0) {
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-    for (const [id, info] of [...pending]) {
-      const details = await poll(id);
-      yield sse("heartbeat", {
-        rowId: info.focus,
-        task: "review_draft",
-        status: details.status,
-        remaining: pending.size,
-        done: reviews.length,
-        total: reviewRuns.length,
-      });
+    const snapshots = await Promise.all(
+      [...pending].map(async ([id, info]) => ({
+        info,
+        details: await poll(id),
+      }))
+    );
+    for (const { info, details } of snapshots) {
+      yield sse(
+        "heartbeat",
+        rowPayload(info.focus, "review_draft", details, {
+          remaining: pending.size,
+          done: reviews.length,
+          total: reviewRuns.length,
+        })
+      );
       if (!isDone(details.status)) continue;
-      pending.delete(id);
+      pending.delete(info.taskRunId);
       const review = (details.results?.[0] ?? {
         focus: info.focus,
         feedback: "",
       }) as Review;
       reviews.push(review);
-      yield sse("stage", {
-        rowId: info.focus,
-        task: "review_draft",
-        status: "complete",
-        taskRunId: id,
-        review,
-        done: reviews.length,
-        total: reviewRuns.length,
-        ...timing(details, info.startedMs),
-      });
+      yield sse(
+        "stage",
+        rowPayload(info.focus, "review_draft", details, {
+          status: "complete",
+          review,
+          done: reviews.length,
+          total: reviewRuns.length,
+        })
+      );
     }
   }
 
@@ -129,38 +151,31 @@ export async function* runEditorialPipeline(
     `${WORKFLOW_SLUG}/revise_draft`,
     [draft, reviews]
   );
-  const reviseStartedMs = Date.now();
   yield sse("stage", {
     rowId: "revise",
     task: "revise_draft",
     status: "running",
     taskRunId: reviseStarted.taskRunId,
-    at: reviseStartedMs,
   });
 
-  while (true) {
+  let revise = await poll(reviseStarted.taskRunId);
+  yield sse("heartbeat", rowPayload("revise", "revise_draft", revise));
+
+  while (!isDone(revise.status)) {
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-    const details = await poll(reviseStarted.taskRunId);
-    yield sse("heartbeat", {
-      rowId: "revise",
-      task: "revise_draft",
-      status: details.status,
-    });
-    if (!isDone(details.status)) continue;
-    const revised = (details.results?.[0] ?? { draft: "" }) as { draft: string };
-    yield sse("stage", {
-      rowId: "revise",
-      task: "revise_draft",
-      status: "complete",
-      taskRunId: reviseStarted.taskRunId,
-      ...timing(details, reviseStartedMs),
-    });
-    yield sse("done", {
-      draft: revised.draft ?? "",
-      reviews,
-      durationMs: Date.now() - startedAt,
-      taskRunId: reviseStarted.taskRunId,
-    });
-    return;
+    revise = await poll(reviseStarted.taskRunId);
+    yield sse("heartbeat", rowPayload("revise", "revise_draft", revise));
   }
+
+  const revised = (revise.results?.[0] ?? { draft: "" }) as { draft: string };
+  yield sse(
+    "stage",
+    rowPayload("revise", "revise_draft", revise, { status: "complete" })
+  );
+  yield sse("done", {
+    draft: revised.draft ?? "",
+    reviews,
+    ...workflowTimes(revise),
+    taskRunId: revise.id,
+  });
 }

@@ -292,7 +292,37 @@
 
     const state = {};
     let clock = null;
-    let t0 = 0;
+    let clientT0 = 0;
+
+    function parseTs(value) {
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+      if (typeof value === "string" && value) {
+        const t = Date.parse(value);
+        if (Number.isFinite(t)) return t;
+      }
+      return null;
+    }
+    function applyWorkflowTimes(id, payload) {
+      if (!state[id]) state[id] = { status: "pending" };
+      const start = parseTs(payload.startedAt);
+      const end = parseTs(payload.completedAt);
+      if (start != null) state[id].startedAt = start;
+      if (end != null) state[id].endedAt = end;
+    }
+    function axisStart() {
+      const starts = ROWS.map((r) => state[r.id]?.startedAt).filter(Boolean);
+      return starts.length ? Math.min(...starts) : clientT0;
+    }
+    function axisEndMs() {
+      let end = axisStart();
+      for (const row of ROWS) {
+        const st = state[row.id];
+        if (!st?.startedAt) continue;
+        if (st.endedAt) end = Math.max(end, st.endedAt);
+        else if (st.status === "running") end = Math.max(end, Date.now());
+      }
+      return Math.max(end, axisStart() + 1);
+    }
 
     function escapeHtml(s) {
       return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -366,8 +396,9 @@
     }
 
     function paintRows() {
-      const now = Date.now();
-      const total = Math.max(now - t0, 1);
+      const t0 = axisStart();
+      const t1 = axisEndMs();
+      const total = Math.max(t1 - t0, 1);
       const axisEnd = document.getElementById("axis-end");
       if (axisEnd) axisEnd.textContent = fmt(total);
       const root = document.getElementById("timeline-rows");
@@ -394,7 +425,8 @@
           return;
         }
         const start = Math.max(0, st.startedAt - t0);
-        const end = Math.max(start, (st.endedAt ?? now) - t0);
+        const rawEnd = st.endedAt ?? (st.status === "running" ? Date.now() : st.startedAt);
+        const end = Math.max(start, rawEnd - t0);
         const leftPct = (start / total) * 100;
         const widthPct = Math.min(100 - leftPct, Math.max((end - start) / total, 0.015) * 100);
         bar.style.left = leftPct + "%";
@@ -435,7 +467,8 @@
     }
 
     function tick() {
-      liveEl.textContent = (document.body.classList.contains("is-done") ? "DONE · " : "LIVE · ") + fmt(Date.now() - t0);
+      const span = axisEndMs() - axisStart();
+      liveEl.textContent = (document.body.classList.contains("is-done") ? "DONE · " : "LIVE · ") + fmt(span);
       paintRows();
     }
 
@@ -454,7 +487,7 @@
       document.body.classList.add("is-running");
       document.body.classList.remove("is-done");
       ROWS.forEach((row) => { state[row.id] = { status: "pending" }; });
-      t0 = Date.now();
+      clientT0 = Date.now();
       paintBoard(); paintRows(); paintCards(); paintRewrite("", "");
       liveEl.className = "live";
       clearInterval(clock);
@@ -504,38 +537,32 @@
       let payload;
       try { payload = JSON.parse(data); } catch { return; }
 
-      if (event === "stage") {
+      if (event === "heartbeat" || event === "stage") {
         const id = payload.rowId;
-        if (!state[id]) state[id] = { status: "pending" };
-        if (payload.status === "running") {
-          state[id].status = "running";
-          state[id].startedAt = Date.now();
+        if (!id) return;
+        applyWorkflowTimes(id, payload);
+        const apiStatus = payload.status;
+        if (apiStatus === "running" || apiStatus === "pending") {
+          if (state[id].status !== "complete") state[id].status = "running";
         }
-        if (payload.status === "complete") {
+        if (apiStatus === "complete" || apiStatus === "completed" || apiStatus === "succeeded") {
           state[id].status = "complete";
-          if (!state[id].startedAt) state[id].startedAt = Date.now();
-          if (typeof payload.durationMs === "number") {
-            state[id].endedAt = state[id].startedAt + payload.durationMs;
-          } else {
-            state[id].endedAt = Date.now();
-          }
           if (payload.review) applyReview(payload.review);
         }
-        if (payload.status === "error") {
+        if (apiStatus === "error" || apiStatus === "failed" || apiStatus === "canceled") {
           state[id].status = "error";
-          state[id].endedAt = Date.now();
         }
         paintBoard(); paintRows(); paintCards();
       }
       if (event === "done") {
         (payload.reviews || []).forEach(applyReview);
+        applyWorkflowTimes("revise", payload);
         if (!state.revise) state.revise = { status: "complete" };
         state.revise.status = "complete";
-        if (!state.revise.endedAt) state.revise.endedAt = Date.now();
         document.body.classList.remove("is-running");
         document.body.classList.add("is-done");
         liveEl.className = "live done";
-        liveEl.textContent = "DONE · " + fmt(payload.durationMs ?? (Date.now() - t0));
+        liveEl.textContent = "DONE · " + fmt(axisEndMs() - axisStart());
         clearInterval(clock);
         paintBoard(); paintRows(); paintCards();
         paintRewrite(originalDraft, payload.draft || "");
