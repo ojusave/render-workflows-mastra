@@ -122,11 +122,21 @@ export async function* runEditorialPipeline(draft: string): AsyncGenerator<strin
     if (isDone(parent.status)) {
       const revised = (parent.results?.[0] ?? { draft: "" }) as { draft: string };
       yield sse("stage", payload("editorial_pipeline", "editorial_pipeline", parent, { status: "complete" }));
+      let revisePayload: Record<string, unknown> | null = null;
+      for (const item of listed ?? []) {
+        if (item.taskRun.id === parentId) continue;
+        const details = await snapshot(item.taskRun.id);
+        if (rowIdFor(details) === "revise") {
+          revisePayload = payload("revise", "revise_draft", details, { status: "complete" });
+          break;
+        }
+      }
       yield sse("done", {
         draft: revised.draft ?? "",
         reviews,
         ...times(parent),
         taskRunId: parent.id,
+        revise: revisePayload,
       });
       return;
     }

@@ -588,9 +588,13 @@
       }
       if (event === "done") {
         (payload.reviews || []).forEach(applyReview);
-        applyWorkflowTimes("revise", payload);
-        if (!state.revise) state.revise = { status: "complete" };
-        state.revise.status = "complete";
+        if (payload.revise) {
+          applyWorkflowTimes("revise", payload.revise);
+          if (!state.revise) state.revise = { status: "complete" };
+          state.revise.status = "complete";
+        } else if (state.revise) {
+          state.revise.status = "complete";
+        }
         document.body.classList.remove("is-running");
         document.body.classList.add("is-done");
         liveEl.className = "live done";
