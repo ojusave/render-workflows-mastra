@@ -34,13 +34,7 @@ This repo demonstrates how to split a Mastra agent pipeline across Render Workfl
 | **[Mastra](https://mastra.ai)** | Reviewer and editor agents (`openai/gpt-5.6-sol` in the [Mastra Render guide](https://mastra.ai/integrations/deploy/render)) |
 | **[Render Web Services](https://render.com/docs/web-services?utm_source=partner&utm_medium=partnerships&utm_campaign=2026_partnership_mastra)** | Express API plus a live UI that streams progress over SSE |
 
-## Architecture
-
-![Architecture diagram](static/images/architecture-diagram.png)
-
-![Pipeline flow](static/images/pipeline-flow.png)
-
-### How It Works
+## How It Works
 
 1. **Browser** posts a draft to the **Express API** on Render
 2. **Express** starts `editorial_pipeline` and streams each chained child run over SSE
